@@ -4,70 +4,353 @@ pragma solidity ^0.8.17;
 import "hardhat/console.sol";
 
 contract vEVM {
+    constructor() {}
+
     struct vEVMState {
+        uint256 pc;
         bytes32[] stack;
-        bytes32[] vMemory;
-        bytes32[] vStorage;
-        bytes32[] returnData;
-        bytes32[] logs;
-        bytes32[] vTx;
-        bytes32[] vBlock;
-        bytes32[] account;
-        bytes32[] vContract;
-        bytes32[] call;
-        bytes32[] state;
-        bytes32[] opcode;
-        bytes32[] gas;
-        bytes32[] pc;
-        bytes32[] msize;
-        bytes32[] jumpdest;
-        bytes32[] push;
-        bytes32[] invalid;
+        // bytes32[] vMemory;
+        // bytes32[] vStorage;
+        bytes32 returnData;
+        bool halting;
+        // bytes32[] logs;
+        // bytes32[] vTx;
+        // bytes32[] vBlock;
+        // bytes32[] account;
+        // bytes32[] vContract;
+        // bytes32[] call;
+        // bytes32[] state;
+        // bytes32[] opcode;
+        // bytes32[] gas;
+        // bytes32[] msize;
+        // bytes32[] jumpdest;
+        // bytes32[] push;
+        // bytes32[] invalid;
     }
 
-    function eval(bytes calldata input)
+    uint256 constant STACK_MAX_SIZE = 3;
+
+    function execute(bytes calldata bytecode)
         external
         view
         returns (vEVMState memory)
     {
         vEVMState memory evm;
-		for(uint i = 0; i < input.length; i++) {
-			bytes1 opcode = input[i];
-			console.log("opcode:");
-			console.logBytes1(opcode);
-		}
-		
-        // first, separate by command length
 
-        // single opcode commands with no parameters
-        // 0x00	STOP
-        // 0x30 ADDRESS
-        // 0x32 ORIGIN
-        // 0x33 CALLER
-        // 0x34 CALLVALUE
-        // 0x36 CALLDATASIZE
-        // 0x38 CODESIZE
-        // 0x3A GASPRICE
-        // 0x3D RETURNDATASIZE
-        // 0x41 COINBASE
-        // 0x42 TIMESTAMP
-        // 0x43 NUMBER
-        // 0x44 DIFFICULTY / PREVRANDAO
-        // 0x45 GASLIMIT
-        // 0x46 CHAINID
-        // 0x47 SELFBALANCE
-        // 0x48 BASEFEE
-        // 0x58 PC
-        // 0x59 MSIZE
-        // 0x5A GAS
-        // 0x5B JUMPDEST
-        // 0x60-0x7F PUSH1-32
-        // FE INVALID
+        evm.pc = 0;
+        evm.halting = false;
 
-        // many of these just dont apply to this game, although I'll need
-        // to implement analogues somehow. can't probalby just call the
-        // actual opcodes, and return the results.
+        do {
+            bytes1 opcode = bytecode[evm.pc];
 
-		return evm;
+            if (opcode == 0x00) {
+                STOP(evm);
+            } else if (opcode == 0x01) {
+                ADD(evm);
+            } else if (opcode == 0x02) {
+                MUL(evm);
+            } else if (opcode == 0x03) {
+                SUB(evm);
+            } else if (opcode == 0x04) {
+                DIV(evm);
+                // } else if (opcode == 0x05) {
+                //     SDIV(evm);
+                // } else if (opcode == 0x06) {
+                //     MOD(evm);
+                // } else if (opcode == 0x07) {
+                //     SMOD(evm);
+            } else if (opcode == 0x50) {
+                POP(evm);
+            } else if ((opcode >= 0x60) && (opcode <= 0x7F)) {
+                uint256 data_size = uint8(opcode) - 0x5F;
+                PUSH(evm, bytecode[evm.pc + 1:evm.pc + 1 + data_size]);
+                evm.pc += data_size;
+            }
+            if (evm.halting) {
+                break;
+            }
+            evm.pc++;
+        } while (evm.pc < bytecode.length);
+
+        return evm;
     }
+
+    function stack_overflow(vEVMState memory evm, uint256 stack_size_change)
+        internal
+        pure
+        returns (bool)
+    {
+        if (stack_size_change >= 0) {
+            if (evm.stack.length + stack_size_change > STACK_MAX_SIZE) {
+                evm.returnData = bytes32(bytes("stack overflow"));
+                evm.halting = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function stack_underflow(vEVMState memory evm, uint256 stack_size_change)
+        internal
+        pure
+        returns (bool)
+    {
+        if (stack_size_change < 0) {
+            if (evm.stack.length < stack_size_change) {
+                evm.returnData = bytes32(bytes("stack underflow"));
+                evm.halting = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function increase_stack(bytes32[] memory stack, uint256 required)
+        internal
+        pure
+        returns (bytes32[] memory)
+    {
+        bytes32[] memory newstack = new bytes32[](stack.length + required);
+        for (uint256 i = 0; i < stack.length; i++) {
+            newstack[i] = stack[i];
+        }
+        return newstack;
+    }
+
+    function decrease_stack(bytes32[] memory stack, uint256 required)
+        internal
+        pure
+        returns (bytes32[] memory)
+    {
+        bytes32[] memory newstack = new bytes32[](stack.length - required);
+        for (uint256 i = 0; i < stack.length - required; i++) {
+            newstack[i] = stack[i];
+        }
+        return newstack;
+    }
+
+    // // operators
+    // inst_size[0x00] = 1;	// STOP			0x00	Returns EVM Object as is.
+    function STOP(vEVMState memory evm) internal pure {
+        evm.halting = true;
+    }
+
+    // inst_size[0x01] = 1;	// ADD			0x01	Requires 2 stack values, 0 imm values.
+    function ADD(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(evm.stack[evm.stack.length - 2]) +
+                uint256(evm.stack[evm.stack.length - 1])
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
+    // inst_size[0x02] = 1;	// MUL			0x02	Requires 2 stack values, 0 imm values.
+    function MUL(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(evm.stack[evm.stack.length - 2]) *
+                uint256(evm.stack[evm.stack.length - 1])
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
+    // inst_size[0x03] = 1;	// SUB			0x03	Requires 2 stack values, 0 imm values.
+    function SUB(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(evm.stack[evm.stack.length - 2]) -
+                uint256(evm.stack[evm.stack.length - 1])
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
+    // inst_size[0x04] = 1;	// DIV			0x04	Requires 2 stack values, 0 imm values.
+    function DIV(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(evm.stack[evm.stack.length - 2]) /
+                uint256(evm.stack[evm.stack.length - 1])
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
+    // inst_size[0x05] = 1;	// SDIV			0x05	Requires 2 stack values, 0 imm values.
+    // inst_size[0x06] = 1;	// MOD			0x06	Requires 2 stack values, 0 imm values.
+    // inst_size[0x07] = 1;	// SMOD			0x07	Requires 2 stack values, 0 imm values.
+    // inst_size[0x08] = 1;	// ADDMOD		0x08	Requires 3 stack values, 0 imm values.
+    // inst_size[0x09] = 1;	// MULMOD		0x09	Requires 3 stack values, 0 imm values.
+    // inst_size[0x0A] = 1;	// EXP			0x0A	Requires 2 stack values, 0 imm values.
+    // inst_size[0x0B] = 1;	// SIGNEXTEND	0x0B	Requires 2 stack values, 0 imm values.
+    // inst_size[0x10] = 1;	// LT			0x10	Requires 2 stack values, 0 imm values.
+    // inst_size[0x11] = 1;	// GT			0x11	Requires 2 stack values, 0 imm values.
+    // inst_size[0x12] = 1;	// SLT			0x12	Requires 2 stack values, 0 imm values.
+    // inst_size[0x13] = 1;	// SGT			0x13	Requires 2 stack values, 0 imm values.
+    // inst_size[0x14] = 1;	// EQ			0x14	Requires 2 stack values, 0 imm values.
+    // inst_size[0x15] = 1;	// ISZERO		0x15	Requires 1 stack values, 0 imm values.
+    // inst_size[0x16] = 1;	// AND			0x16	Requires 2 stack values, 0 imm values.
+    // inst_size[0x17] = 1;	// OR			0x17	Requires 2 stack values, 0 imm values.
+    // inst_size[0x18] = 1;	// XOR			0x18	Requires 2 stack values, 0 imm values.
+    // inst_size[0x19] = 1;	// NOT			0x19	Requires 1 stack values, 0 imm values.
+    // inst_size[0x1A] = 1;	// BYTE			0x1A	Requires 2 stack values, 0 imm values.
+    // inst_size[0x1B] = 1;	// SHL			0x1B	Requires 2 stack values, 0 imm values.
+    // inst_size[0x1C] = 1;	// SHR			0x1C	Requires 2 stack values, 0 imm values.
+    // inst_size[0x1D] = 1;	// SAR			0x1D	Requires 2 stack values, 0 imm values.
+    // inst_size[0x20] = 1;	// SHA3			0x20	Requires 2 stack values, 0 imm values.
+
+    // // external data manupulation
+    // inst_size[0x30] = 1;	// ADDRESS		0x30	Return vEVM address, or allow an override?
+    // inst_size[0x31] = 1;	// BALANCE		0x31	Requires 1 stack value, 0 imm values. Fetch an actual balance?
+    // inst_size[0x32] = 1;	// ORIGIN		0x32	Use actual tx.origin?
+    // inst_size[0x33] = 1;	// CALLER		0x33	Use actual msg.sender?
+    // inst_size[0x34] = 1;	// CALLVALUE	0x34	Use actual msg.value?
+    // inst_size[0x35] = 1;	// CALLDATALOAD	0x35	Requires 1 stack value, 0 imm values. Use actual msg.data?
+    // inst_size[0x36] = 1;	// CALLDATASIZE	0x36	Requires 0 stack value, 0 imm values. Use actual msg.data?
+    // inst_size[0x37] = 1;	// CALLDATACOPY	0x37	Requires 3 stack values, 0 imm values. Use actual msg.data?
+    // inst_size[0x38] = 1;	// CODESIZE		0x38	Requires 0 stack value, 0 imm values. Use original size of input?
+    // inst_size[0x39] = 1;	// CODECOPY		0x39	Requires 3 stack values, 0 imm values. Use original input?
+    // inst_size[0x3A] = 1;	// GASPRICE		0x3A	Use actual tx.gasprice?
+    // inst_size[0x3B] = 1;	// EXTCODESIZE	0x3B	Requires 1 stack value, 0 imm values. Use actual size of code?
+    // inst_size[0x3C] = 1;	// EXTCODECOPY	0x3C	Requires 4 stack values, 0 imm values. Use actual code?
+    // inst_size[0x3D] = 1;	// RETURNDATASIZE	0x3D	Requires 0 stack value, 0 imm values. Use actual size of return data?
+    // inst_size[0x3E] = 1;	// RETURNDATACOPY	0x3E	Requires 3 stack values, 0 imm values. Use actual return data?
+    // inst_size[0x3F] = 1;	// EXTCODEHASH	0x3F	Requires 1 stack value, 0 imm values. Use actual code hash?
+
+    // // block information
+    // inst_size[0x40] = 1;	// BLOCKHASH	0x40	Requires 1 stack value, 0 imm values. Use actual blockhash?
+    // inst_size[0x41] = 1;	// COINBASE		0x41	Use actual block.coinbase?
+    // inst_size[0x42] = 1;	// TIMESTAMP	0x42	Use actual block.timestamp?
+    // inst_size[0x43] = 1;	// NUMBER		0x43	Use actual block.number?
+    // inst_size[0x44] = 1;	// PREVRANDAO	0x44	Use actual block.PREVRANDAO?
+    // inst_size[0x45] = 1;	// GASLIMIT		0x45	Use actual block.gaslimit?
+    // inst_size[0x46] = 1;	// CHAINID		0x46	Use actual block.chainid?
+    // inst_size[0x47] = 1;	// SELFBALANCE	0x47	Same as calling BALANCE on vEVM address, but cheaper
+    // inst_size[0x48] = 1;	// BASEFEE		0x48	Use actual basefee?
+
+    // // memory manipluation
+    // inst_size[0x50] = 1;	// POP			0x50	Requires 1 stack value, 0 imm values.
+    function POP(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 1)) {
+            return;
+        }
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
+    // inst_size[0x51] = 1;	// MLOAD		0x51	Requires 1 stack value, 0 imm values.
+    // inst_size[0x52] = 1;	// MSTORE		0x52	Requires 2 stack values, 0 imm values.
+    // inst_size[0x53] = 1;	// MSTORE8		0x53	Requires 2 stack values, 0 imm values.
+    // inst_size[0x54] = 1;	// SLOAD		0x54	Requires 1 stack value, 0 imm values.
+    // inst_size[0x55] = 1;	// SSTORE		0x55	Requires 2 stack values, 0 imm values.
+    // inst_size[0x56] = 1;	// JUMP			0x56	Requires 1 stack value, 0 imm values.
+    // inst_size[0x57] = 1;	// JUMPI		0x57	Requires 2 stack values, 0 imm values.
+    // inst_size[0x58] = 1;	// PC			0x58	Requires 0 stack value, 0 imm values.
+    // inst_size[0x59] = 1;	// MSIZE		0x59	Requires 0 stack value, 0 imm values.
+    // inst_size[0x5A] = 1;	// GAS			0x5A	Requires 0 stack value, 0 imm values. no messing with this for now.
+    // inst_size[0x5B] = 1;	// JUMPDEST		0x5B	Requires 0 stack value, 0 imm values. basically a NOP
+
+    // // stack manipluation
+
+    // Generalized PUSH instruction
+    function PUSH(vEVMState memory evm, bytes memory data) internal pure {
+        if (stack_overflow(evm, data.length)) {
+            return;
+        }
+        evm.stack = increase_stack(evm.stack, data.length);
+        for (uint256 i = 0; i < data.length; i++) {
+            evm.stack[evm.stack.length - data.length + i] = bytes32(data[i]);
+        }
+    }
+
+    // inst_size[0x60] = 2;	// PUSH1		0x60	Requires 0 stack value, 1 imm values
+    // inst_size[0x61] = 3;	// PUSH2		0x61	Requires 0 stack value, 2 imm values.
+    // inst_size[0x62] = 4;	// PUSH3		0x62	Requires 0 stack value, 3 imm values.
+    // inst_size[0x63] = 5;	// PUSH4		0x63	Requires 0 stack value, 4 imm values.
+    // inst_size[0x64] = 6;	// PUSH5		0x64	Requires 0 stack value, 5 imm values.
+    // inst_size[0x65] = 7;	// PUSH6		0x65	Requires 0 stack value, 6 imm values.
+    // inst_size[0x66] = 8;	// PUSH7		0x66	Requires 0 stack value, 7 imm values.
+    // inst_size[0x67] = 9;	// PUSH8		0x67	Requires 0 stack value, 8 imm values.
+    // inst_size[0x68] = 10;	// PUSH9		0x68	Requires 0 stack value, 9 imm values.
+    // inst_size[0x69] = 11;	// PUSH10		0x69	Requires 0 stack value, 10 imm values.
+    // inst_size[0x6A] = 12;	// PUSH11		0x6A	Requires 0 stack value, 11 imm values.
+    // inst_size[0x6B] = 13;	// PUSH12		0x6B	Requires 0 stack value, 12 imm values.
+    // inst_size[0x6C] = 14;	// PUSH13		0x6C	Requires 0 stack value, 13 imm values.
+    // inst_size[0x6D] = 15;	// PUSH14		0x6D	Requires 0 stack value, 14 imm values.
+    // inst_size[0x6E] = 16;	// PUSH15		0x6E	Requires 0 stack value, 15 imm values.
+    // inst_size[0x6F] = 17;	// PUSH16		0x6F	Requires 0 stack value, 16 imm values.
+    // inst_size[0x70] = 18;	// PUSH17		0x70	Requires 0 stack value, 17 imm values.
+    // inst_size[0x71] = 19;	// PUSH18		0x71	Requires 0 stack value, 18 imm values.
+    // inst_size[0x72] = 20;	// PUSH19		0x72	Requires 0 stack value, 19 imm values.
+    // inst_size[0x73] = 21;	// PUSH20		0x73	Requires 0 stack value, 20 imm values.
+    // inst_size[0x74] = 22;	// PUSH21		0x74	Requires 0 stack value, 21 imm values.
+    // inst_size[0x75] = 23;	// PUSH22		0x75	Requires 0 stack value, 22 imm values.
+    // inst_size[0x76] = 24;	// PUSH23		0x76	Requires 0 stack value, 23 imm values.
+    // inst_size[0x77] = 25;	// PUSH24		0x77	Requires 0 stack value, 24 imm values.
+    // inst_size[0x78] = 26;	// PUSH25		0x78	Requires 0 stack value, 25 imm values.
+    // inst_size[0x79] = 27;	// PUSH26		0x79	Requires 0 stack value, 26 imm values.
+    // inst_size[0x7A] = 28;	// PUSH27		0x7A	Requires 0 stack value, 27 imm values.
+    // inst_size[0x7B] = 29;	// PUSH28		0x7B	Requires 0 stack value, 28 imm values.
+    // inst_size[0x7C] = 30;	// PUSH29		0x7C	Requires 0 stack value, 29 imm values.
+    // inst_size[0x7D] = 31;	// PUSH30		0x7D	Requires 0 stack value, 30 imm values.
+    // inst_size[0x7E] = 32;	// PUSH31		0x7E	Requires 0 stack value, 31 imm values.
+    // inst_size[0x7F] = 33;	// PUSH32		0x7F	Requires 0 stack value, 32 imm values.
+
+    // inst_size[0x80] = 1;	// DUP1			0x80	Requires 1 stack value, 0 imm values.
+    // inst_size[0x81] = 1;	// DUP2			0x81	Requires 2 stack value, 0 imm values.
+    // inst_size[0x82] = 1;	// DUP3			0x82	Requires 3 stack value, 0 imm values.
+    // inst_size[0x83] = 1;	// DUP4			0x83	Requires 4 stack value, 0 imm values.
+    // inst_size[0x84] = 1;	// DUP5			0x84	Requires 5 stack value, 0 imm values.
+    // inst_size[0x85] = 1;	// DUP6			0x85	Requires 6 stack value, 0 imm values.
+    // inst_size[0x86] = 1;	// DUP7			0x86	Requires 7 stack value, 0 imm values.
+    // inst_size[0x87] = 1;	// DUP8			0x87	Requires 8 stack value, 0 imm values.
+    // inst_size[0x88] = 1;	// DUP9			0x88	Requires 9 stack value, 0 imm values.
+    // inst_size[0x89] = 1;	// DUP10		0x89	Requires 10 stack value, 0 imm values.
+    // inst_size[0x8A] = 1;	// DUP11		0x8A	Requires 11 stack value, 0 imm values.
+    // inst_size[0x8B] = 1;	// DUP12		0x8B	Requires 12 stack value, 0 imm values.
+    // inst_size[0x8C] = 1;	// DUP13		0x8C	Requires 13 stack value, 0 imm values.
+    // inst_size[0x8D] = 1;	// DUP14		0x8D	Requires 14 stack value, 0 imm values.
+    // inst_size[0x8E] = 1;	// DUP15		0x8E	Requires 15 stack value, 0 imm values.
+    // inst_size[0x8F] = 1;	// DUP16		0x8F	Requires 16 stack value, 0 imm values.
+
+    // inst_size[0x90] = 1;	// SWAP1		0x90	Requires 2 stack value, 0 imm values.
+    // inst_size[0x91] = 1;	// SWAP2		0x91	Requires 3 stack value, 0 imm values.
+    // inst_size[0x92] = 1;	// SWAP3		0x92	Requires 4 stack value, 0 imm values.
+    // inst_size[0x93] = 1;	// SWAP4		0x93	Requires 5 stack value, 0 imm values.
+    // inst_size[0x94] = 1;	// SWAP5		0x94	Requires 6 stack value, 0 imm values.
+    // inst_size[0x95] = 1;	// SWAP6		0x95	Requires 7 stack value, 0 imm values.
+    // inst_size[0x96] = 1;	// SWAP7		0x96	Requires 8 stack value, 0 imm values.
+    // inst_size[0x97] = 1;	// SWAP8		0x97	Requires 9 stack value, 0 imm values.
+    // inst_size[0x98] = 1;	// SWAP9		0x98	Requires 10 stack value, 0 imm values.
+    // inst_size[0x99] = 1;	// SWAP10		0x99	Requires 11 stack value, 0 imm values.
+    // inst_size[0x9A] = 1;	// SWAP11		0x9A	Requires 12 stack value, 0 imm values.
+    // inst_size[0x9B] = 1;	// SWAP12		0x9B	Requires 13 stack value, 0 imm values.
+    // inst_size[0x9C] = 1;	// SWAP13		0x9C	Requires 14 stack value, 0 imm values.
+    // inst_size[0x9D] = 1;	// SWAP14		0x9D	Requires 15 stack value, 0 imm values.
+    // inst_size[0x9E] = 1;	// SWAP15		0x9E	Requires 16 stack value, 0 imm values.
+    // inst_size[0x9F] = 1;	// SWAP16		0x9F	Requires 17 stack value, 0 imm values.
+
+    // // logs don't have an influence on the evm
+    // inst_size[0xA0] = 1;	// LOG0			0xA0	Requires 2 stack value, 0 imm values.
+    // inst_size[0xA1] = 1;	// LOG1			0xA1	Requires 3 stack value, 0 imm values.
+    // inst_size[0xA2] = 1;	// LOG2			0xA2	Requires 4 stack value, 0 imm values.
+    // inst_size[0xA3] = 1;	// LOG3			0xA3	Requires 5 stack value, 0 imm values.
+    // inst_size[0xA4] = 1;	// LOG4			0xA4	Requires 6 stack value, 0 imm values.
+
+    // // subcontext related instructions
+    // inst_size[0xF0] = 1;	// CREATE		0xF0	Requires 3 stack value, 0 imm values.
+    // inst_size[0xF1] = 1;	// CALL			0xF1	Requires 7 stack value, 0 imm values.
+    // inst_size[0xF2] = 1;	// CALLCODE		0xF2	Requires 7 stack value, 0 imm values.
+    // inst_size[0xF3] = 1;	// RETURN		0xF3	Requires 2 stack value, 0 imm values.
+    // inst_size[0xF4] = 1;	// DELEGATECALL	0xF4	Requires 6 stack value, 0 imm values.
+    // inst_size[0xFA] = 1;	// STATICCALL	0xFA	Requires 6 stack value, 0 imm values.
+    // inst_size[0xFD] = 1;	// REVERT		0xFD	Requires 2 stack value, 0 imm values.
+    // inst_size[0xFE] = 1; 	// INVALID		0xFE	Requires 0 stack value, 0 imm values.
+    // inst_size[0xFF] = 1;	// SELFDESTRUCT	0xFF	Requires 1 stack value, 0 imm values.
 }
