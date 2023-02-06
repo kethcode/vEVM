@@ -28,7 +28,7 @@ contract vEVM {
         // bytes32[] invalid;
     }
 
-    uint256 constant STACK_MAX_SIZE = 3;
+    uint256 constant STACK_MAX_SIZE = 1024;
 
     function execute(bytes calldata bytecode)
         external
@@ -53,23 +53,45 @@ contract vEVM {
                 SUB(evm);
             } else if (opcode == 0x04) {
                 DIV(evm);
-                // } else if (opcode == 0x05) {
-                //     SDIV(evm);
-                // } else if (opcode == 0x06) {
-                //     MOD(evm);
-                // } else if (opcode == 0x07) {
-                //     SMOD(evm);
+            } else if (opcode == 0x05) {
+                SDIV(evm);
+            } else if (opcode == 0x06) {
+                MOD(evm);
+            } else if (opcode == 0x07) {
+                SMOD(evm);
+            } else if (opcode == 0x08) {
+                ADDMOD(evm);
+            } else if (opcode == 0x09) {
+                MULMOD(evm);
+            } else if (opcode == 0x0A) {
+                EXP(evm);
+                // } else if (opcode == 0x0B) {
+                // 	SIGNEXTEND(evm);
+            } else if (opcode == 0x10) {
+                LT(evm);
+            } else if (opcode == 0x11) {
+                GT(evm);
+            } else if (opcode == 0x12) {
+                SLT(evm);
+            } else if (opcode == 0x13) {
+                SGT(evm);
+            } else if (opcode == 0x14) {
+                EQ(evm);
+                // } else if (opcode == 0x15) {
+                // 	ISZERO(evm);
             } else if (opcode == 0x50) {
                 POP(evm);
             } else if ((opcode >= 0x60) && (opcode <= 0x7F)) {
+                // PUSHX
                 uint256 data_size = uint8(opcode) - 0x5F;
                 PUSH(evm, bytecode[evm.pc + 1:evm.pc + 1 + data_size]);
                 evm.pc += data_size;
             }
+
             if (evm.halting) {
                 break;
             }
-            evm.pc++;
+            evm.pc += 1;
         } while (evm.pc < bytecode.length);
 
         return evm;
@@ -141,8 +163,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            uint256(evm.stack[evm.stack.length - 2]) +
-                uint256(evm.stack[evm.stack.length - 1])
+            uint256(evm.stack[evm.stack.length - 1]) +
+                uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = decrease_stack(evm.stack, 1);
     }
@@ -153,8 +175,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            uint256(evm.stack[evm.stack.length - 2]) *
-                uint256(evm.stack[evm.stack.length - 1])
+            uint256(evm.stack[evm.stack.length - 1]) *
+                uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = decrease_stack(evm.stack, 1);
     }
@@ -165,8 +187,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            uint256(evm.stack[evm.stack.length - 2]) -
-                uint256(evm.stack[evm.stack.length - 1])
+            uint256(evm.stack[evm.stack.length - 1]) -
+                uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = decrease_stack(evm.stack, 1);
     }
@@ -177,24 +199,183 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            uint256(evm.stack[evm.stack.length - 2]) /
-                uint256(evm.stack[evm.stack.length - 1])
+            uint256(evm.stack[evm.stack.length - 1]) /
+                uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = decrease_stack(evm.stack, 1);
     }
 
     // inst_size[0x05] = 1;	// SDIV			0x05	Requires 2 stack values, 0 imm values.
+    function SDIV(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(
+                int256(uint256(evm.stack[evm.stack.length - 1])) /
+                    int256(uint256(evm.stack[evm.stack.length - 2]))
+            )
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
     // inst_size[0x06] = 1;	// MOD			0x06	Requires 2 stack values, 0 imm values.
+    function MOD(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(evm.stack[evm.stack.length - 1]) %
+                uint256(evm.stack[evm.stack.length - 2])
+        );
+
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
     // inst_size[0x07] = 1;	// SMOD			0x07	Requires 2 stack values, 0 imm values.
+    function SMOD(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(
+                int256(uint256(evm.stack[evm.stack.length - 1])) %
+                    int256(uint256(evm.stack[evm.stack.length - 2]))
+            )
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
     // inst_size[0x08] = 1;	// ADDMOD		0x08	Requires 3 stack values, 0 imm values.
+    function ADDMOD(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 3)) {
+            return;
+        }
+        if (uint256(evm.stack[evm.stack.length - 3]) == 0) {
+            evm.stack[evm.stack.length - 3] = bytes32(0);
+        } else {
+            evm.stack[evm.stack.length - 3] = bytes32(
+                (uint256(evm.stack[evm.stack.length - 1]) +
+                    uint256(evm.stack[evm.stack.length - 2])) %
+                    uint256(evm.stack[evm.stack.length - 3])
+            );
+        }
+        evm.stack = decrease_stack(evm.stack, 2);
+    }
+
     // inst_size[0x09] = 1;	// MULMOD		0x09	Requires 3 stack values, 0 imm values.
+    function MULMOD(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 3)) {
+            return;
+        }
+        if (uint256(evm.stack[evm.stack.length - 3]) == 0) {
+            evm.stack[evm.stack.length - 3] = bytes32(0);
+        } else {
+            evm.stack[evm.stack.length - 3] = bytes32(
+                (uint256(evm.stack[evm.stack.length - 1]) *
+                    uint256(evm.stack[evm.stack.length - 2])) %
+                    uint256(evm.stack[evm.stack.length - 3])
+            );
+        }
+        evm.stack = decrease_stack(evm.stack, 2);
+    }
+
     // inst_size[0x0A] = 1;	// EXP			0x0A	Requires 2 stack values, 0 imm values.
+    function EXP(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(evm.stack[evm.stack.length - 1]) **
+                uint256(evm.stack[evm.stack.length - 2])
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
     // inst_size[0x0B] = 1;	// SIGNEXTEND	0x0B	Requires 2 stack values, 0 imm values.
     // inst_size[0x10] = 1;	// LT			0x10	Requires 2 stack values, 0 imm values.
+    function LT(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(
+                uint256(evm.stack[evm.stack.length - 1]) <
+                    uint256(evm.stack[evm.stack.length - 2])
+                    ? 1
+                    : 0
+            )
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
     // inst_size[0x11] = 1;	// GT			0x11	Requires 2 stack values, 0 imm values.
+    function GT(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(
+                uint256(evm.stack[evm.stack.length - 1]) >
+                    uint256(evm.stack[evm.stack.length - 2])
+                    ? 1
+                    : 0
+            )
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
     // inst_size[0x12] = 1;	// SLT			0x12	Requires 2 stack values, 0 imm values.
+    function SLT(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(
+                int256(uint256(evm.stack[evm.stack.length - 1])) <
+                    int256(uint256(evm.stack[evm.stack.length - 2]))
+                    ? 1
+                    : 0
+            )
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
     // inst_size[0x13] = 1;	// SGT			0x13	Requires 2 stack values, 0 imm values.
+    function SGT(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(
+                int256(uint256(evm.stack[evm.stack.length - 1])) >
+                    int256(uint256(evm.stack[evm.stack.length - 2]))
+                    ? 1
+                    : 0
+            )
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
     // inst_size[0x14] = 1;	// EQ			0x14	Requires 2 stack values, 0 imm values.
+    function EQ(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] = bytes32(
+            uint256(
+                uint256(evm.stack[evm.stack.length - 1]) ==
+                    uint256(evm.stack[evm.stack.length - 2])
+                    ? 1
+                    : 0
+            )
+        );
+        evm.stack = decrease_stack(evm.stack, 1);
+    }
+
     // inst_size[0x15] = 1;	// ISZERO		0x15	Requires 1 stack values, 0 imm values.
     // inst_size[0x16] = 1;	// AND			0x16	Requires 2 stack values, 0 imm values.
     // inst_size[0x17] = 1;	// OR			0x17	Requires 2 stack values, 0 imm values.
@@ -260,13 +441,11 @@ contract vEVM {
 
     // Generalized PUSH instruction
     function PUSH(vEVMState memory evm, bytes memory data) internal pure {
-        if (stack_overflow(evm, data.length)) {
+        if (stack_overflow(evm, 1)) {
             return;
         }
-        evm.stack = increase_stack(evm.stack, data.length);
-        for (uint256 i = 0; i < data.length; i++) {
-            evm.stack[evm.stack.length - data.length + i] = bytes32(data[i]);
-        }
+        evm.stack = increase_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(data);
     }
 
     // inst_size[0x60] = 2;	// PUSH1		0x60	Requires 0 stack value, 1 imm values
