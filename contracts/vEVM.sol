@@ -468,7 +468,7 @@ contract vEVM {
 
         // memory operates on bytes, not slots
         // memory expands in 32 byte slots
-        console.logBytes(evm.mem);
+        //console.logBytes(evm.mem);
 
         uint256 memory_address_top = uint256(
             memory_read(evm.mem, uint256(0x40))
@@ -506,14 +506,16 @@ contract vEVM {
 
         memory_write(evm.mem, uint256(0x40), bytes32(uint256(0x80) + start_position + 32));
 
+        evm.stack = reduce_stack(evm.stack, 2);
+
         memory_address_top = uint256(memory_read(evm.mem, uint256(0x40)));
         console.log("memory address top: %s", memory_address_top);
 
-        memory_address_highest_needed = uint256(0x80) + start_position + 32;
-        console.log(
-            "memory address highest needed: %s",
-            memory_address_highest_needed
-        );
+        // memory_address_highest_needed = uint256(0x80) + start_position + 32;
+        // console.log(
+        //     "memory address highest needed: %s",
+        //     memory_address_highest_needed
+        // );
 
         // the amount of memory we have allocated is evm.mem.length * 0x20
         // minus the start of free memory, which is 0x80
