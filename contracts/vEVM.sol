@@ -41,10 +41,10 @@ contract vEVM {
 
         // create initial memory reservations
         evm.mem = expand_mem(evm.mem, 4);
-        memory_write(evm.mem, uint256(0x00), bytes32(uint256(0x00)));
-        memory_write(evm.mem, uint256(0x20), bytes32(uint256(0x00)));
-        memory_write(evm.mem, uint256(0x40), bytes32(uint256(0x80)));
-        memory_write(evm.mem, uint256(0x60), bytes32(uint256(0x00)));
+        memory_write_bytes32(evm.mem, uint256(0x00), bytes32(uint256(0x00)));
+        memory_write_bytes32(evm.mem, uint256(0x20), bytes32(uint256(0x00)));
+        memory_write_bytes32(evm.mem, uint256(0x40), bytes32(uint256(0x80)));
+        memory_write_bytes32(evm.mem, uint256(0x60), bytes32(uint256(0x00)));
 
         evm.pc = 0;
         evm.running = true;
@@ -92,6 +92,8 @@ contract vEVM {
                 POP(evm);
             } else if (opcode == 0x52) {
                 MSTORE(evm);
+            } else if (opcode == 0x53) {
+                MSTORE8(evm);
             } else if ((opcode >= 0x60) && (opcode <= 0x7F)) {
                 // PUSHX
                 uint256 data_size = uint8(opcode) - 0x5F;
@@ -170,6 +172,36 @@ contract vEVM {
             newbuf[i] = buf[i];
         }
         return newbuf;
+    }
+
+    function memory_read(bytes memory mem, uint256 start)
+        private
+        pure
+        returns (bytes32 value)
+    {
+        for (uint256 i = 0; i < 32; i++) {
+            value |= bytes32(bytes1(mem[start + i])) >> (i * 8);
+        }
+
+        return value;
+    }
+
+    function memory_write_bytes32(
+        bytes memory mem,
+        uint256 start,
+        bytes32 value
+    ) private pure {
+        for (uint256 i = 0; i < 32; i++) {
+            mem[start + i] = bytes1(bytes32(value << (i * 8)));
+        }
+    }
+
+    function memory_write_bytes1(
+        bytes memory mem,
+        uint256 start,
+        bytes1 value
+    ) private pure {
+        mem[start] = value;
     }
 
     // // operators
@@ -458,148 +490,93 @@ contract vEVM {
     // inst_size[0x51] = 1;	// MLOAD		0x51	Requires 1 stack value, 0 imm values.
     // inst_size[0x52] = 1;	// MSTORE		0x52	Requires 2 stack values, 0 imm values.
     function MSTORE(vEVMState memory evm) internal view {
+        // do we have enough values on the stack?
         if (stack_underflow(evm, 2)) {
             return;
         }
 
-        // memory expansion time
+        // get the memory address to write to
         uint256 start_position = uint256(evm.stack[evm.stack.length - 1]);
-        uint256 value = uint256(evm.stack[evm.stack.length - 2]);
 
-        // memory operates on bytes, not slots
-        // memory expands in 32 byte slots
-        //console.logBytes(evm.mem);
-
-        uint256 memory_address_top = uint256(
-            memory_read(evm.mem, uint256(0x40))
-        );
-        console.log("memory address top: %s", memory_address_top);
-
-        uint256 memory_address_highest_needed = uint256(0x80) +
+        // how much memory do we need?
+        uint256 memory_needed = (uint256(0x80) +
             start_position +
-            32;
-        console.log(
-            "memory address highest needed: %s",
-            memory_address_highest_needed
-        );
+            uint256(0x20)) - uint256(memory_read(evm.mem, uint256(0x40)));
 
-        if (memory_address_highest_needed > memory_address_top) {
-            console.log("memory expansion needed");
-
-            uint256 memory_to_add = memory_address_highest_needed -
-                memory_address_top;
-            console.log("memory to expand: %s", memory_to_add);
-
+        // expand memory if needed
+        if (memory_needed > 0) {
             // how many memory slots do we need to expand by?
-            uint256 memory_slots_to_add = memory_to_add / 32;
-            console.log("memory slots to expand: %s", memory_slots_to_add);
-
-            // expand the memory
-            evm.mem = expand_mem(evm.mem, memory_slots_to_add);
+            evm.mem = expand_mem(evm.mem, 1 + memory_needed / 32);
         }
 
-        memory_write(
+        // store value
+        memory_write_bytes32(
             evm.mem,
             uint256(0x80) + start_position,
-            bytes32(value)
+            evm.stack[evm.stack.length - 2]
         );
 
-        memory_write(evm.mem, uint256(0x40), bytes32(uint256(0x80) + start_position + 32));
+        // if we wrote past the old free memory pointer, update it
+        if (
+            uint256(0x80) + start_position + uint256(0x20) >
+            uint256(memory_read(evm.mem, uint256(0x40)))
+        ) {
+            memory_write_bytes32(
+                evm.mem,
+                uint256(0x40),
+                bytes32(uint256(0x80) + start_position + uint256(0x20))
+            );
+        }
 
+        // pop stack
         evm.stack = reduce_stack(evm.stack, 2);
-
-        memory_address_top = uint256(memory_read(evm.mem, uint256(0x40)));
-        console.log("memory address top: %s", memory_address_top);
-
-        // memory_address_highest_needed = uint256(0x80) + start_position + 32;
-        // console.log(
-        //     "memory address highest needed: %s",
-        //     memory_address_highest_needed
-        // );
-
-        // the amount of memory we have allocated is evm.mem.length * 0x20
-        // minus the start of free memory, which is 0x80
-        // uint256 memory_allocated = (evm.mem.length) - uint256(0x80);
-        // console.log("memory allocated: %s", memory_allocated);
-
-        // // the amount of memory we have available is the top of allocated
-        // // minud the location pointed to by the address pointed at by
-        // // the free memory pointer (stored at slot 2, byte 0x40)
-
-        // // uint256 memory_available = memory_allocated -
-        // //     uint256(memory_read(evm.mem, uint256(0x40)));
-        // // console.log("memory available: %s", memory_available);
-
-        // // // we need to expand the memory to 32 bytes past the start position
-        // uint256 memory_needed = start_position + 32;
-        // console.log("memory needed: %s", memory_needed);
-
-        // // if we need more memory than we have available, expand it
-        // if (memory_needed > memory_available) {
-        //     // how much memory do we need to expand by?
-
-        // }
-
-        // memory_allocated = (evm.mem.length) - uint256(0x80);
-        // console.log("memory allocated: %s", memory_allocated);
-
-        // memory_available =
-        //     memory_allocated -
-        //     uint256(bytesToBytes32(evm.mem, 0x40));
-        // console.log("memory available: %s", memory_available);
-
-        // // write the value to memory
-        // bytes32ToBytes(evm.mem, start_position, bytes32(value));
-
-        // all slots here are 32 bytes.
-        // so we need start positon + 32 / 32 memory slots
-
-        // uint256 memory_slots_needed = (start_position + 32) / 32;
-
-        // if(evm.mem.length < memory_slots_needed) {
-        // 	evm.mem = expand_space(evm.mem, memory_slots_needed - evm.mem.length);
-        // }
-
-        // however. writing to address 0x40 fails, right?
-
-        // if(evm.mem.length < (uint256(evm.stack[evm.stack.length - 1]) / 32) + 1)
-
-        // memory_word = uint256(evm.stack[evm.stack.length - 1]) / 32;
-        // value = uint256(evm.stack[evm.stack.length - 2])
-
-        // evm.mem = expand_space(evm.mem, 1);
-        // evm.mem[evm.mem.length - 1] = bytes32(data);
     }
 
     // inst_size[0x53] = 1;	// MSTORE8		0x53	Requires 2 stack values, 0 imm values.
-    // function MSTORE8(vEVMState memory evm, bytes1 data) internal pure {
-    // 	if (stack_underflow(evm, 2)) {
-    //         return;
-    //     }
-    //     if (evm.mem.length == 0) {
-    //         evm.mem = expand_space(evm.mem, 1);
-    //     }
+    function MSTORE8(vEVMState memory evm) internal view {
+        // do we have enough values on the stack?
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
 
-    //     // this one is interesting.
+        // get the memory address to write to
+        uint256 start_position = uint256(evm.stack[evm.stack.length - 1]);
 
-    //     // if the stack is empty, we expand the stack and put this in the first byte
+        // how much memory do we need?
+        uint256 memory_needed = (uint256(0x80) +
+            start_position +
+            uint256(0x01)) - uint256(memory_read(evm.mem, uint256(0x40)));
 
-    //     // if the stack isn't empty...
+        // expand memory if needed
+        if (memory_needed > 0) {
+            // how many memory slots do we need to expand by?
+            evm.mem = expand_mem(evm.mem, 1 + memory_needed / 32);
+        }
 
-    //     // is the top word of the stack full?
-    //     // if so, we expand the stack and put this in the first byte
+        // store value
+        memory_write_bytes1(
+            evm.mem,
+            uint256(0x80) + start_position,
+            bytes1(
+                evm.stack[evm.stack.length - 2] & bytes32(uint256(0xFF << 248))
+            )
+        );
 
-    //     // if not, how do we tell teh difference between empy zeros and intentional zeroes?
+        // if we wrote past the old free memory pointer, update it
+        if (
+            uint256(0x80) + start_position + uint256(0x01) >
+            uint256(memory_read(evm.mem, uint256(0x40)))
+        ) {
+            memory_write_bytes32(
+                evm.mem,
+                uint256(0x40),
+                bytes32(uint256(0x80) + start_position + uint256(0x01))
+            );
+        }
 
-    //     // nope, we are just writng to a byte position.  dont overcomplicate this.
-    //     // this isn't an concat. this is writing to an index.
-
-    //     if (stack_overflow(evm, 1)) {
-    //         return;
-    //     }
-    //     evm.mem = expand_space(evm.mem, 1);
-    //     evm.mem[evm.mem.length - 1] = bytes32(data);
-    // }
+        // pop stack
+        evm.stack = reduce_stack(evm.stack, 2);
+    }
 
     // inst_size[0x54] = 1;	// SLOAD		0x54	Requires 1 stack value, 0 imm values.
     // inst_size[0x55] = 1;	// SSTORE		0x55	Requires 2 stack values, 0 imm values.
@@ -705,26 +682,4 @@ contract vEVM {
     // inst_size[0xFD] = 1;	// REVERT		0xFD	Requires 2 stack value, 0 imm values.
     // inst_size[0xFE] = 1; 	// INVALID		0xFE	Requires 0 stack value, 0 imm values.
     // inst_size[0xFF] = 1;	// SELFDESTRUCT	0xFF	Requires 1 stack value, 0 imm values.
-
-    function memory_read(bytes memory mem, uint256 start)
-        private
-        pure
-        returns (bytes32 value)
-    {
-        for (uint256 i = 0; i < 32; i++) {
-            value |= bytes32(bytes1(mem[start + i])) >> (i * 8);
-        }
-
-        return value;
-    }
-
-    function memory_write(
-        bytes memory mem,
-        uint256 start,
-        bytes32 value
-    ) private pure {
-        for (uint256 i = 0; i < 32; i++) {
-            mem[start + i] = bytes1(bytes32(value << (i * 8)));
-        }
-    }
 }

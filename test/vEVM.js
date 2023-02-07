@@ -5,8 +5,21 @@ const print_evm_state = (state) => {
   console.log("    pc:", state.pc);
   console.log("return:", state.RETURNDATA);
   console.log(" stack:", state.stack);
-  console.log("   mem:", state.mem);
+  console.log("   mem:", chunkSubstr(state.mem, 32));
 };
+
+function chunkSubstr(str, size) {
+
+	const hex = str.slice(2);
+	const numChunks = Math.ceil(hex.length / size)
+	const chunks = new Array(numChunks)
+  
+	for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+	  chunks[i] = hex.substr(o, size)
+	}
+  
+	return chunks
+  }
 
 describe("vEVM", function () {
   async function deployFixture() {
@@ -70,6 +83,15 @@ describe("vEVM", function () {
 		  const { evm } = await loadFixture(deployFixture);
 		  let result = await evm.execute("0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600052");
 		  console.log("  code:", "0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600052");
+		  print_evm_state(result);
+		});
+	  });
+
+	  describe("MSTORE8", function () {
+		it("Should push a bytes1 to memory", async function () {
+		  const { evm } = await loadFixture(deployFixture);
+		  let result = await evm.execute("0x60A5600053");
+		  console.log("  code:", "0x60A5600053");
 		  print_evm_state(result);
 		});
 	  });
