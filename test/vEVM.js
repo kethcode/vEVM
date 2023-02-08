@@ -6,6 +6,14 @@ const print_evm_state = (state) => {
   console.log("output:", state.output);
   console.log(" stack:", state.stack);
   console.log("   mem:", chunkSubstr(state.mem, 64));
+  console.log("  skey:", state.storageKey);
+  console.log(" sdata:", state.storageData);
+//   if (state.storageKey.length > 0) {
+//     console.log(" store:");
+//     for (let i = 0; i < state.storageKey.length; i++) {
+//       console.log("        ", state.storageKey[i], state.storageValue[i]);
+//     }
+//   }
 };
 
 function chunkSubstr(str, size) {
@@ -138,14 +146,14 @@ describe("vEVM", function () {
     //   });
     // });
 
-    describe("MSIZE", function () {
-      it("Should push a bytes1 to memory 0x80", async function () {
-        const { evm } = await loadFixture(deployFixture);
-        let result = await evm.execute("0x59608051505960C9515059");
-        console.log("  code:", "0x59608051505960C9515059");
-        print_evm_state(result);
-      });
-    });
+    // describe("MSIZE", function () {
+    //   it("Should push a bytes1 to memory 0x80", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x59608051505960C9515059");
+    //     console.log("  code:", "0x59608051505960C9515059");
+    //     print_evm_state(result);
+    //   });
+    // });
 
     // describe("RETURN", function () {
     //   it("Should return the sum the top two items on the stack", async function () {
@@ -155,5 +163,23 @@ describe("vEVM", function () {
     //     print_evm_state(result);
     //   });
     // });
+
+    // describe("SLOAD", function () {
+    //   it("Should push a bytes1 to memory 0x80", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x600054600154");
+    //     console.log("  code:", "0x600054600154");
+    //     print_evm_state(result);
+    //   });
+    // });
+
+    describe("SSTORE", function () {
+      it("Should store and retrieve 0x25 to storage slot 11", async function () {
+        const { evm } = await loadFixture(deployFixture);
+        let result = await evm.execute("0x6025601155601154");
+        console.log("  code:", "0x6025601155601154");
+        print_evm_state(result);
+      });
+    });
   });
 });

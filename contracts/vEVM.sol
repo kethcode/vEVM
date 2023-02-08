@@ -12,6 +12,8 @@ contract vEVM {
         bytes mem;
         uint256 msize;
         // bytes32[] vStorage;
+        bytes32[] storageKey;
+        bytes32[] storageData;
         bytes output;
         bool running;
         bool reverting;
@@ -98,6 +100,10 @@ contract vEVM {
                 MSTORE(evm);
             } else if (opcode == 0x53) {
                 MSTORE8(evm);
+            } else if (opcode == 0x54) {
+                SLOAD(evm);
+            } else if (opcode == 0x55) {
+                SSTORE(evm);
             } else if (opcode == 0x59) {
                 MSIZE(evm);
             } else if ((opcode >= 0x60) && (opcode <= 0x7F)) {
@@ -174,6 +180,20 @@ contract vEVM {
             newbuf[i] = buf[i];
         }
         return newbuf;
+    }
+
+    function expand_storage(
+        bytes32[] memory keys,
+        bytes32[] memory data,
+        uint256 slots
+    ) internal pure returns (bytes32[] memory, bytes32[] memory) {
+        bytes32[] memory newkeys = new bytes32[](keys.length + slots);
+        bytes32[] memory newdata = new bytes32[](data.length + slots);
+        for (uint256 i = 0; i < keys.length; i++) {
+            newkeys[i] = keys[i];
+            newdata[i] = data[i];
+        }
+        return (newkeys, newdata);
     }
 
     function expand_mem(bytes memory buf, uint256 slots)
@@ -695,8 +715,88 @@ contract vEVM {
         evm.stack = reduce_stack(evm.stack, 2);
     }
 
+    // the storage hashmap is emulated through mached-index arrays in memory
+    // we look over storageKey until we find a match, then use that index to
+    // look up the corresponding value in storageData.
+
     // inst_size[0x54] = 1;	// SLOAD		0x54	Requires 1 stack value, 0 imm values.
+    function SLOAD(vEVMState memory evm) internal view {
+        // do we have enough values on the stack?
+        if (stack_underflow(evm, 1)) {
+            return;
+        }
+
+        bool index_found = false;
+
+        if (evm.storageKey.length == 0) {
+            // no storage keys have been set yet
+            // so we place zero on the stack.  empty storage contains zero.
+            evm.stack[evm.stack.length - 1] = bytes32(0);
+        } else {
+            // get the index of the storage key we're looking for
+            uint256 storage_index = 0;
+            for (uint256 i = 0; i < evm.storageKey.length; i++) {
+                if (evm.storageKey[i] == evm.stack[evm.stack.length - 1]) {
+                    storage_index = i;
+                    index_found = true;
+                    break;
+                }
+            }
+
+            // did we find something?
+            if (index_found == false) {
+                // nope.  we didn't find anything.
+                // so we place zero on the stack.  empty storage contains zero.
+                evm.stack[evm.stack.length - 1] = bytes32(0);
+            } else {
+                // we found something.  place it on the stack.
+                evm.stack[evm.stack.length - 1] = evm.storageData[
+                    storage_index
+                ];
+            }
+        }
+    }
+
     // inst_size[0x55] = 1;	// SSTORE		0x55	Requires 2 stack values, 0 imm values.
+    function SSTORE(vEVMState memory evm) internal view {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+
+        bytes32 key = evm.stack[evm.stack.length - 1];
+        bytes32 value = evm.stack[evm.stack.length - 2];
+
+        // check if the storage is already allocated
+        uint256 storage_index = 0;
+        bool index_found = false;
+        for (uint256 i = 0; i < evm.storageKey.length; i++) {
+            if (evm.storageKey[i] == key) {
+                storage_index = i;
+                index_found = true;
+                break;
+            }
+        }
+
+        // did we find something?
+        if (index_found == false) {
+            // nope.  we didn't find anything.
+            // so we add the key and value to the end of the arrays.
+            (evm.storageKey, evm.storageData) = expand_storage(
+                evm.storageKey,
+                evm.storageData,
+                1
+            );
+            evm.storageKey[evm.storageKey.length - 1] = key;
+            evm.storageData[evm.storageData.length - 1] = value;
+        } else {
+            // we found something.  update it.
+            evm.storageData[storage_index] = value;
+        }
+
+        // pop stack
+        evm.stack = reduce_stack(evm.stack, 2);
+    }
+
     // inst_size[0x56] = 1;	// JUMP			0x56	Requires 1 stack value, 0 imm values.
     // inst_size[0x57] = 1;	// JUMPI		0x57	Requires 2 stack values, 0 imm values.
     // inst_size[0x58] = 1;	// PC			0x58	Requires 0 stack value, 0 imm values.
@@ -705,10 +805,6 @@ contract vEVM {
         if (stack_overflow(evm, 1)) {
             return;
         }
-
-        console.log("MSIZE: evm.mem.length = %s", evm.mem.length);
-        console.logBytes32(bytes32(evm.mem.length));
-
         evm.stack = expand_stack(evm.stack, 1);
         evm.stack[evm.stack.length - 1] = bytes32(evm.mem.length);
     }
