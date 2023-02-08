@@ -86,23 +86,15 @@ describe("vEVM", function () {
     //   });
     // });
 
-    describe("MLOAD", function () {
-		it("Should read various offsets onto the stack", async function () {
-		  const { evm } = await loadFixture(deployFixture);
-		  let result = await evm.execute("0x60FF60005260005160015160A560A05260A151");
-		  console.log("  code:", "0x60FF60005260005160015160A560A05260A151");
-		  print_evm_state(result);
-		});
-  
-		// it("Should push a bytes1 to memory 0x81", async function () {
-		//   const { evm } = await loadFixture(deployFixture);
-		//   let result = await evm.execute("0x60A5600153");
-		//   console.log("  code:", "0x60A5600153");
-		//   print_evm_state(result);
-		// });
-	  });
-  
+    // describe("MLOAD", function () {
+    // 	it("Should read various offsets onto the stack", async function () {
+    // 	  const { evm } = await loadFixture(deployFixture);
+    // 	  let result = await evm.execute("0x60FF60005260005160015160A560A05260A151");
+    // 	  console.log("  code:", "0x60FF60005260005160015160A560A05260A151");
+    // 	  print_evm_state(result);
+    // 	});
 
+    //   });
 
     // describe("MSTORE", function () {
     //   it("Should push a bytes32 to memory 0x80", async function () {
@@ -145,6 +137,15 @@ describe("vEVM", function () {
     //     print_evm_state(result);
     //   });
     // });
+
+    describe("MSIZE", function () {
+      it("Should push a bytes1 to memory 0x80", async function () {
+        const { evm } = await loadFixture(deployFixture);
+        let result = await evm.execute("0x59608051505960C9515059");
+        console.log("  code:", "0x59608051505960C9515059");
+        print_evm_state(result);
+      });
+    });
 
     // describe("RETURN", function () {
     //   it("Should return the sum the top two items on the stack", async function () {

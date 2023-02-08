@@ -98,6 +98,8 @@ contract vEVM {
                 MSTORE(evm);
             } else if (opcode == 0x53) {
                 MSTORE8(evm);
+            } else if (opcode == 0x59) {
+                MSIZE(evm);
             } else if ((opcode >= 0x60) && (opcode <= 0x7F)) {
                 // PUSHX
                 uint256 data_size = uint8(opcode) - 0x5F;
@@ -565,6 +567,19 @@ contract vEVM {
             evm.mem,
             start_position
         );
+
+        // if we read past the old free memory pointer,
+        // then we expanded memory, so update the pointer
+        if (
+            start_position + uint256(0x20) >
+            uint256(memory_read_bytes32(evm.mem, uint256(0x40)))
+        ) {
+            memory_write_bytes32(
+                evm.mem,
+                uint256(0x40),
+                bytes32(start_position + uint256(0x20))
+            );
+        }
     }
 
     // inst_size[0x52] = 1;	// MSTORE		0x52	Requires 2 stack values, 0 imm values.
@@ -686,6 +701,18 @@ contract vEVM {
     // inst_size[0x57] = 1;	// JUMPI		0x57	Requires 2 stack values, 0 imm values.
     // inst_size[0x58] = 1;	// PC			0x58	Requires 0 stack value, 0 imm values.
     // inst_size[0x59] = 1;	// MSIZE		0x59	Requires 0 stack value, 0 imm values.
+    function MSIZE(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+
+        console.log("MSIZE: evm.mem.length = %s", evm.mem.length);
+        console.logBytes32(bytes32(evm.mem.length));
+
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(evm.mem.length);
+    }
+
     // inst_size[0x5A] = 1;	// GAS			0x5A	Requires 0 stack value, 0 imm values. no messing with this for now.
     // inst_size[0x5B] = 1;	// JUMPDEST		0x5B	Requires 0 stack value, 0 imm values. basically a NOP
 
