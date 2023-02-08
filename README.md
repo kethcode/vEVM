@@ -88,7 +88,7 @@
 | MSTORE   | 0x52   | Done   |
 | MSTORE8  | 0x53   | Done   |
 | SLOAD    | 0x54   | Done   |
-| SSTORE   | 0x55   |        |
+| SSTORE   | 0x55   | Done   |
 | JUMP     | 0x56   |        |
 | JUMPI    | 0x57   |        |
 | PC       | 0x58   |        |
@@ -138,22 +138,22 @@
 
 | Mnemonic           | OpCode | Status |
 | ------------------ | ------ | ------ |
-| DUP1 = 0x80 + iota |        |        |
-| DUP2               |        |        |
-| DUP3               |        |        |
-| DUP4               |        |        |
-| DUP5               |        |        |
-| DUP6               |        |        |
-| DUP7               |        |        |
-| DUP8               |        |        |
-| DUP9               |        |        |
-| DUP10              |        |        |
-| DUP11              |        |        |
-| DUP12              |        |        |
-| DUP13              |        |        |
-| DUP14              |        |        |
-| DUP15              |        |        |
-| DUP16              |        |        |
+| DUP1 = 0x80 + iota |        | Done   |
+| DUP2               |        | Done   |
+| DUP3               |        | Done   |
+| DUP4               |        | Done   |
+| DUP5               |        | Done   |
+| DUP6               |        | Done   |
+| DUP7               |        | Done   |
+| DUP8               |        | Done   |
+| DUP9               |        | Done   |
+| DUP10              |        | Done   |
+| DUP11              |        | Done   |
+| DUP12              |        | Done   |
+| DUP13              |        | Done   |
+| DUP14              |        | Done   |
+| DUP15              |        | Done   |
+| DUP16              |        | Done   |
 
 ### 0x90 range - swaps
 
@@ -204,6 +204,6 @@
 | DELEGATECALL | 0xf4   |        |
 | CREATE2      | 0xf5   |        |
 | STATICCALL   | 0xfa   |        |
-| REVERT       | 0xfd   | Done   |
+| REVERT       | 0xfd   |        |
 | INVALID      | 0xfe   |        |
 | SELFDESTRUCT | 0xff   |        |

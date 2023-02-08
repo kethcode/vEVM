@@ -123,6 +123,10 @@ contract vEVM {
                 uint256 data_size = uint8(opcode) - 0x5F;
                 PUSH(evm, bytecode[evm.pc + 1:evm.pc + 1 + data_size]);
                 evm.pc += data_size;
+            } else if ((opcode >= 0x80) && (opcode <= 0x8F)) {
+                // DUPX
+                uint256 distance = uint8(opcode) - 0x7F;
+                DUP(evm, distance);
             } else if (opcode == 0xF3) {
                 RETURN(evm);
             } else if (opcode == 0xFD) {
@@ -1010,6 +1014,21 @@ contract vEVM {
     // inst_size[0x7D] = 31;	// PUSH30		0x7D	Requires 0 stack value, 30 imm values.
     // inst_size[0x7E] = 32;	// PUSH31		0x7E	Requires 0 stack value, 31 imm values.
     // inst_size[0x7F] = 33;	// PUSH32		0x7F	Requires 0 stack value, 32 imm values.
+
+    // Generalized PUSH instruction
+    function DUP(vEVMState memory evm, uint256 distance) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        if (stack_underflow(evm, distance)) {
+            return;
+        }
+
+        bytes32 data_to_dup = evm.stack[evm.stack.length - distance];
+
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = data_to_dup;
+    }
 
     // inst_size[0x80] = 1;	// DUP1			0x80	Requires 1 stack value, 0 imm values.
     // inst_size[0x81] = 1;	// DUP2			0x81	Requires 2 stack value, 0 imm values.

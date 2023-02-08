@@ -8,12 +8,12 @@ const print_evm_state = (state) => {
   console.log("   mem:", chunkSubstr(state.mem, 64));
   console.log("  skey:", state.storageKey);
   console.log(" sdata:", state.storageData);
-//   if (state.storageKey.length > 0) {
-//     console.log(" store:");
-//     for (let i = 0; i < state.storageKey.length; i++) {
-//       console.log("        ", state.storageKey[i], state.storageValue[i]);
-//     }
-//   }
+  //   if (state.storageKey.length > 0) {
+  //     console.log(" store:");
+  //     for (let i = 0; i < state.storageKey.length; i++) {
+  //       console.log("        ", state.storageKey[i], state.storageValue[i]);
+  //     }
+  //   }
 };
 
 function chunkSubstr(str, size) {
@@ -182,7 +182,7 @@ describe("vEVM", function () {
     //   });
     // });
 
-	// describe("BYTE", function () {
+    // describe("BYTE", function () {
     //   it("Should extract a specfic byte from a stack value back onto the stack", async function () {
     //     const { evm } = await loadFixture(deployFixture);
     //     let result = await evm.execute("0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F601B1A");
@@ -191,14 +191,32 @@ describe("vEVM", function () {
     //   });
     // });
 
-	
-	describe("SHA3", function () {
-		it("Should extract a specfic byte from a stack value back onto the stack", async function () {
-		  const { evm } = await loadFixture(deployFixture);
-		  let result = await evm.execute("0x7FFFFFFFFF000000000000000000000000000000000000000000000000000000006000526004600020");
-		  console.log("  code:", "0x7FFFFFFFFF000000000000000000000000000000000000000000000000000000006000526004600020");
-		  print_evm_state(result);
-		});
-	  });
+    // describe("SHA3", function () {
+    //   it("Should extract a specfic byte from a stack value back onto the stack", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute(
+    //       "0x7FFFFFFFFF000000000000000000000000000000000000000000000000000000006000526004600020"
+    //     );
+    //     console.log(
+    //       "  code:",
+    //       "0x7FFFFFFFFF000000000000000000000000000000000000000000000000000000006000526004600020"
+    //     );
+    //     print_evm_state(result);
+    //   });
+    // });
+
+    describe("DUPN", function () {
+      it("Should Duplicate the Nth stack item (from top of the stack) to the top of stack", async function () {
+        const { evm } = await loadFixture(deployFixture);
+        let result = await evm.execute(
+          "0x6000600160026003600460056006600760086009600A600B600C600D600E600F8A"
+        );
+        console.log(
+          "  code:",
+          "0x6000600160026003600460056006600760086009600A600B600C600D600E600F80"
+        );
+        print_evm_state(result);
+      });
+    });
   });
 });
