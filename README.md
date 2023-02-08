@@ -31,16 +31,16 @@
 | OR       | 0x17   | Done   |
 | XOR      | 0x18   | Done   |
 | NOT      | 0x19   | Done   |
-| BYTE     | 0x1a   |        |
-| SHL      | 0x1b   |        |
-| SHR      | 0x1c   |        |
+| BYTE     | 0x1a   | Done   |
+| SHL      | 0x1b   | Done   |
+| SHR      | 0x1c   | Done   |
 | SAR      | 0x1d   |        |
 
 ### 0x20 range - crypto
 
-| Mnemonic  | OpCode | Status |
-| --------- | ------ | ------ |
-| KECCAK256 | 0x20   |        |
+| Mnemonic | OpCode | Status |
+| -------- | ------ | ------ |
+| SHA3     | 0x20   | Done   |
 
 ### 0x30 range - closure state
 

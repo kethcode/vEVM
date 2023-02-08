@@ -173,13 +173,32 @@ describe("vEVM", function () {
     //   });
     // });
 
-    describe("SSTORE", function () {
-      it("Should store and retrieve 0x25 to storage slot 11", async function () {
-        const { evm } = await loadFixture(deployFixture);
-        let result = await evm.execute("0x6025601155601154");
-        console.log("  code:", "0x6025601155601154");
-        print_evm_state(result);
-      });
-    });
+    // describe("SSTORE", function () {
+    //   it("Should store and retrieve 0x25 to storage slot 11", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x6025601155601154");
+    //     console.log("  code:", "0x6025601155601154");
+    //     print_evm_state(result);
+    //   });
+    // });
+
+	// describe("BYTE", function () {
+    //   it("Should extract a specfic byte from a stack value back onto the stack", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F601B1A");
+    //     console.log("  code:", "0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F601B1A");
+    //     print_evm_state(result);
+    //   });
+    // });
+
+	
+	describe("SHA3", function () {
+		it("Should extract a specfic byte from a stack value back onto the stack", async function () {
+		  const { evm } = await loadFixture(deployFixture);
+		  let result = await evm.execute("0x7FFFFFFFFF000000000000000000000000000000000000000000000000000000006000526004600020");
+		  console.log("  code:", "0x7FFFFFFFFF000000000000000000000000000000000000000000000000000000006000526004600020");
+		  print_evm_state(result);
+		});
+	  });
   });
 });

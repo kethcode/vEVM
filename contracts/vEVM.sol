@@ -100,6 +100,10 @@ contract vEVM {
                 XOR(evm);
             } else if (opcode == 0x19) {
                 NOT(evm);
+            } else if (opcode == 0x1A) {
+                BYTE(evm);
+            } else if (opcode == 0x20) {
+                SHA3(evm);
             } else if (opcode == 0x50) {
                 POP(evm);
             } else if (opcode == 0x51) {
@@ -553,10 +557,104 @@ contract vEVM {
     }
 
     // inst_size[0x1A] = 1;	// BYTE			0x1A	Requires 2 stack values, 0 imm values.
+    function BYTE(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        uint256 index = uint256(evm.stack[evm.stack.length - 1]);
+        evm.stack[evm.stack.length - 2] = bytes1(
+            bytes32(evm.stack[evm.stack.length - 2] << (index * 8))
+        );
+        evm.stack = reduce_stack(evm.stack, 1);
+    }
+
     // inst_size[0x1B] = 1;	// SHL			0x1B	Requires 2 stack values, 0 imm values.
+    function SHL(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+
+        uint256 shift = uint256(evm.stack[evm.stack.length - 1]);
+
+        evm.stack[evm.stack.length - 2] =
+            evm.stack[evm.stack.length - 2] <<
+            shift;
+
+        evm.stack = reduce_stack(evm.stack, 1);
+    }
+
     // inst_size[0x1C] = 1;	// SHR			0x1C	Requires 2 stack values, 0 imm values.
+    function SHR(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+
+        uint256 shift = uint256(evm.stack[evm.stack.length - 1]);
+
+        evm.stack[evm.stack.length - 2] =
+            evm.stack[evm.stack.length - 2] >>
+            shift;
+
+        evm.stack = reduce_stack(evm.stack, 1);
+    }
+
     // inst_size[0x1D] = 1;	// SAR			0x1D	Requires 2 stack values, 0 imm values.
     // inst_size[0x20] = 1;	// SHA3			0x20	Requires 2 stack values, 0 imm values.
+    function SHA3(vEVMState memory evm) internal view {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+
+        // get the memory address to read from
+        uint256 start_position = uint256(evm.stack[evm.stack.length - 1]);
+        uint256 size = uint256(evm.stack[evm.stack.length - 2]);
+
+        // how much memory do we expect is allocated?
+        uint256 memory_needed = 0;
+
+        // if we're reading from free memory, check if we need to expand it
+        if (start_position >= 0x80) {
+            memory_needed =
+                (start_position + size) -
+                uint256(memory_read_bytes32(evm.mem, uint256(0x40)));
+        } else {
+            // nothing to do here.  you're reading from reserved memory
+            // so it's guarenteed to be allocated
+        }
+
+        // expand memory if needed
+        if (memory_needed > 0) {
+            // how many memory slots do we need to expand by?
+            evm.mem = expand_mem(
+                evm.mem,
+                (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
+            );
+        }
+
+        // read value
+        bytes memory to_be_hashed = memory_read_bytes(
+            evm.mem,
+            start_position,
+            size
+        );
+
+        evm.stack[evm.stack.length - 2] = keccak256(to_be_hashed);
+
+        // if we read past the old free memory pointer,
+        // then we expanded memory, so update the pointer
+        if (
+            start_position + size >
+            uint256(memory_read_bytes32(evm.mem, uint256(0x40)))
+        ) {
+            memory_write_bytes32(
+                evm.mem,
+                uint256(0x40),
+                bytes32(start_position + size)
+            );
+        }
+
+        evm.stack = reduce_stack(evm.stack, 1);
+    }
 
     // // external data manupulation
     // inst_size[0x30] = 1;	// ADDRESS		0x30	Return vEVM address, or allow an override?
