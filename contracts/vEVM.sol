@@ -90,8 +90,16 @@ contract vEVM {
                 SGT(evm);
             } else if (opcode == 0x14) {
                 EQ(evm);
-                // } else if (opcode == 0x15) {
-                // 	ISZERO(evm);
+            } else if (opcode == 0x15) {
+                ISZERO(evm);
+            } else if (opcode == 0x16) {
+                AND(evm);
+            } else if (opcode == 0x17) {
+                OR(evm);
+            } else if (opcode == 0x18) {
+                XOR(evm);
+            } else if (opcode == 0x19) {
+                NOT(evm);
             } else if (opcode == 0x50) {
                 POP(evm);
             } else if (opcode == 0x51) {
@@ -504,9 +512,46 @@ contract vEVM {
     }
 
     // inst_size[0x16] = 1;	// AND			0x16	Requires 2 stack values, 0 imm values.
+    function AND(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] =
+            evm.stack[evm.stack.length - 1] &
+            evm.stack[evm.stack.length - 2];
+        evm.stack = reduce_stack(evm.stack, 1);
+    }
+
     // inst_size[0x17] = 1;	// OR			0x17	Requires 2 stack values, 0 imm values.
+    function OR(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] =
+            evm.stack[evm.stack.length - 1] |
+            evm.stack[evm.stack.length - 2];
+        evm.stack = reduce_stack(evm.stack, 1);
+    }
+
     // inst_size[0x18] = 1;	// XOR			0x18	Requires 2 stack values, 0 imm values.
+    function XOR(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 2] =
+            evm.stack[evm.stack.length - 1] ^
+            evm.stack[evm.stack.length - 2];
+        evm.stack = reduce_stack(evm.stack, 1);
+    }
+
     // inst_size[0x19] = 1;	// NOT			0x19	Requires 1 stack values, 0 imm values.
+    function NOT(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 1)) {
+            return;
+        }
+        evm.stack[evm.stack.length - 1] = ~evm.stack[evm.stack.length - 1];
+    }
+
     // inst_size[0x1A] = 1;	// BYTE			0x1A	Requires 2 stack values, 0 imm values.
     // inst_size[0x1B] = 1;	// SHL			0x1B	Requires 2 stack values, 0 imm values.
     // inst_size[0x1C] = 1;	// SHR			0x1C	Requires 2 stack values, 0 imm values.
