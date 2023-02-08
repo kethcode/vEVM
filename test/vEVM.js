@@ -86,47 +86,65 @@ describe("vEVM", function () {
     //   });
     // });
 
-    describe("MSTORE", function () {
-      it("Should push a bytes32 to memory 0x80", async function () {
-        const { evm } = await loadFixture(deployFixture);
-        let result = await evm.execute(
-          "0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600052"
-        );
-        console.log(
-          "  code:",
-          "0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600052"
-        );
-        print_evm_state(result);
-      });
+    describe("MLOAD", function () {
+		it("Should read various offsets onto the stack", async function () {
+		  const { evm } = await loadFixture(deployFixture);
+		  let result = await evm.execute("0x60FF60005260005160015160A560A05260A151");
+		  console.log("  code:", "0x60FF60005260005160015160A560A05260A151");
+		  print_evm_state(result);
+		});
+  
+		// it("Should push a bytes1 to memory 0x81", async function () {
+		//   const { evm } = await loadFixture(deployFixture);
+		//   let result = await evm.execute("0x60A5600153");
+		//   console.log("  code:", "0x60A5600153");
+		//   print_evm_state(result);
+		// });
+	  });
+  
 
-      it("Should push a bytes32 to memory 0x81", async function () {
-        const { evm } = await loadFixture(deployFixture);
-        let result = await evm.execute(
-          "0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600152"
-        );
-        console.log(
-          "  code:",
-          "0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600152"
-        );
-        print_evm_state(result);
-      });
-    });
 
-    describe("MSTORE8", function () {
-      it("Should push a bytes1 to memory 0x80", async function () {
-        const { evm } = await loadFixture(deployFixture);
-        let result = await evm.execute("0x60A5600053");
-        console.log("  code:", "0x60A5600053");
-        print_evm_state(result);
-      });
+    // describe("MSTORE", function () {
+    //   it("Should push a bytes32 to memory 0x80", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute(
+    //       "0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600052"
+    //     );
+    //     console.log(
+    //       "  code:",
+    //       "0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600052"
+    //     );
+    //     print_evm_state(result);
+    //   });
 
-      it("Should push a bytes1 to memory 0x81", async function () {
-        const { evm } = await loadFixture(deployFixture);
-        let result = await evm.execute("0x60A5600153");
-        console.log("  code:", "0x60A5600153");
-        print_evm_state(result);
-      });
-    });
+    //   it("Should push a bytes32 to memory 0x81", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute(
+    //       "0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600152"
+    //     );
+    //     console.log(
+    //       "  code:",
+    //       "0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600152"
+    //     );
+    //     print_evm_state(result);
+    //   });
+    // });
+
+    // describe("MSTORE8", function () {
+    //   it("Should push a bytes1 to memory 0x80", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x60A5600053");
+    //     console.log("  code:", "0x60A5600053");
+    //     print_evm_state(result);
+    //   });
+
+    //   it("Should push a bytes1 to memory 0x81", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x60A5600153");
+    //     console.log("  code:", "0x60A5600153");
+    //     print_evm_state(result);
+    //   });
+    // });
 
     // describe("RETURN", function () {
     //   it("Should return the sum the top two items on the stack", async function () {

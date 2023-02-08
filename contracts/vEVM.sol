@@ -92,6 +92,8 @@ contract vEVM {
                 // 	ISZERO(evm);
             } else if (opcode == 0x50) {
                 POP(evm);
+            } else if (opcode == 0x51) {
+                MLOAD(evm);
             } else if (opcode == 0x52) {
                 MSTORE(evm);
             } else if (opcode == 0x53) {
@@ -529,9 +531,40 @@ contract vEVM {
 
     // inst_size[0x51] = 1;	// MLOAD		0x51	Requires 1 stack value, 0 imm values.
     function MLOAD(vEVMState memory evm) internal view {
-        if (stack_underflow(evm, 2)) {
+        if (stack_underflow(evm, 1)) {
             return;
         }
+
+        // get the memory address to read from
+        uint256 start_position = uint256(evm.stack[evm.stack.length - 1]);
+
+        // how much memory do we expect is allocated?
+        uint256 memory_needed = 0;
+
+        // if we're readnig from free memory, check if we need to expand it
+        if (start_position >= 0x80) {
+            memory_needed =
+                (start_position + uint256(0x20)) -
+                uint256(memory_read_bytes32(evm.mem, uint256(0x40)));
+        } else {
+            // nothing to do here.  you're reading from reserved memory
+            // so it's guarenteed to be allocated
+        }
+
+        // expand memory if needed
+        if (memory_needed > 0) {
+            // how many memory slots do we need to expand by?
+            evm.mem = expand_mem(
+                evm.mem,
+                (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
+            );
+        }
+
+        // read value
+        evm.stack[evm.stack.length - 1] = memory_read_bytes32(
+            evm.mem,
+            start_position
+        );
     }
 
     // inst_size[0x52] = 1;	// MSTORE		0x52	Requires 2 stack values, 0 imm values.
@@ -551,7 +584,7 @@ contract vEVM {
         // if we're writing to free memory, check if we need to expand it
         if (start_position >= 0x80) {
             memory_needed =
-                (uint256(0x80) + start_position + uint256(0x20)) -
+                (start_position + uint256(0x20)) -
                 uint256(memory_read_bytes32(evm.mem, uint256(0x40)));
         } else {
             // nothing to do here.  you're writing to reserved memory
@@ -608,7 +641,7 @@ contract vEVM {
 
         if (start_position >= 0x80) {
             memory_needed =
-                (uint256(0x80) + start_position + uint256(0x01)) -
+                (start_position + uint256(0x01)) -
                 uint256(memory_read_bytes32(evm.mem, uint256(0x40)));
         } else {
             // nothing to do here.  you're writing to reserved memory
