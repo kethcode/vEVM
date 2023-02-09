@@ -6,6 +6,9 @@ typechain
 typechain-types
 
 # Hardhat files
+artifacts/build-info
+artifacts/hardhat
 cache
-artifacts
 
+
+package-lock.json

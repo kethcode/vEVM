@@ -11,15 +11,15 @@ module.exports = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 450,
+            runs: 1,
           },
         },
       },
     ],
   },
   networks: {
-    goerli: {
-      url: `https://eth-goerli.g.alchemy.com/v2/${process.env.RPC_KEY}`,
+    "optimism-goerli": {
+      url: process.env.ALCHEMY_OP_GOERLI_KEY_HTTP,
       accounts: [process.env.GOERLI_PRIVATE_KEY],
     },
   },
@@ -28,11 +28,11 @@ module.exports = {
     currency: "USD",
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
     gasPriceApi: process.env.GAS_PRICE_API,
-	showTimeSpent: true,
+    showTimeSpent: true,
   },
   etherscan: {
     apiKey: {
-      goerli: process.env.ETHERSCAN_API_KEY,
+		optimisticGoerli: process.env.ETHERSCAN_OP_API_KEY,
     },
   },
 };

@@ -261,7 +261,7 @@ contract vEVM {
         bytes memory mem,
         uint256 start,
         uint256 size
-    ) private view returns (bytes memory value) {
+    ) private pure returns (bytes memory value) {
         value = new bytes(size);
         for (uint256 i = 0; i < size; i++) {
             value[i] = mem[start + i];
@@ -287,6 +287,54 @@ contract vEVM {
     //     uint256 start,
     //     uint256 size
     // ) private view returns (bytes memory value) {
+
+    // 	// we're reverting so just dump this at the end of memory
+    //     uint256 memory_needed = size;
+
+    //     // if we're writing to free memory, check if we need to expand it
+    //     if (start_position >= 0x80) {
+    //         memory_needed =
+    //             (start_position + uint256(0x20)) -
+    //             uint256(memory_read_bytes32(evm.mem, uint256(0x40)));
+    //     } else {
+    //         // nothing to do here.  you're writing to reserved memory
+    //         // so you're on your own.  try not to fuck it up.
+    //     }
+
+    //     // expand memory if needed
+    //     if (memory_needed > 0) {
+    //         // how many memory slots do we need to expand by?
+    //         evm.mem = expand_mem(
+    //             evm.mem,
+    //             (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
+    //         );
+    //     }
+
+    //     // store value
+    //     memory_write_bytes32(
+    //         evm.mem,
+    //         //            uint256(0x80) + start_position,
+    //         start_position,
+    //         evm.stack[evm.stack.length - 2]
+    //     );
+
+    //     // if we wrote past the old free memory pointer, update it
+    //     if (
+    //         //uint256(0x80) + start_position + uint256(0x20) >
+    //         start_position + uint256(0x20) >
+    //         uint256(memory_read_bytes32(evm.mem, uint256(0x40)))
+    //     ) {
+    //         memory_write_bytes32(
+    //             evm.mem,
+    //             uint256(0x40),
+    //             //bytes32(uint256(0x80) + start_position + uint256(0x20))
+    //             bytes32(start_position + uint256(0x20))
+    //         );
+    //     }
+
+    //     // pop stack
+    //     evm.stack = reduce_stack(evm.stack, 2);
+
     //     for (uint256 i = 0; i < size; i++) {
     //          mem[start + i] = value[i];
     //     }
@@ -637,7 +685,7 @@ contract vEVM {
 
     // inst_size[0x1D] = 1;	// SAR			0x1D	Requires 2 stack values, 0 imm values.
     // inst_size[0x20] = 1;	// SHA3			0x20	Requires 2 stack values, 0 imm values.
-    function SHA3(vEVMState memory evm) internal view {
+    function SHA3(vEVMState memory evm) internal pure {
         if (stack_underflow(evm, 2)) {
             return;
         }
@@ -749,7 +797,7 @@ contract vEVM {
     // inst_size[0x36] = 1;	// CALLDATASIZE	0x36	Requires 0 stack value, 0 imm values. Use actual msg.data?
     // inst_size[0x37] = 1;	// CALLDATACOPY	0x37	Requires 3 stack values, 0 imm values. Use actual msg.data?
     // inst_size[0x38] = 1;	// CODESIZE		0x38	Requires 0 stack value, 0 imm values. Use original size of input?
-    function CODESIZE(vEVMState memory evm) internal view {
+    function CODESIZE(vEVMState memory evm) internal pure {
         if (stack_overflow(evm, 1)) {
             return;
         }
@@ -854,7 +902,7 @@ contract vEVM {
     }
 
     // inst_size[0x51] = 1;	// MLOAD		0x51	Requires 1 stack value, 0 imm values.
-    function MLOAD(vEVMState memory evm) internal view {
+    function MLOAD(vEVMState memory evm) internal pure {
         if (stack_underflow(evm, 1)) {
             return;
         }
@@ -905,7 +953,7 @@ contract vEVM {
     }
 
     // inst_size[0x52] = 1;	// MSTORE		0x52	Requires 2 stack values, 0 imm values.
-    function MSTORE(vEVMState memory evm) internal view {
+    function MSTORE(vEVMState memory evm) internal pure {
         // do we have enough values on the stack?
         if (stack_underflow(evm, 2)) {
             return;
@@ -964,7 +1012,7 @@ contract vEVM {
     }
 
     // inst_size[0x53] = 1;	// MSTORE8		0x53	Requires 2 stack values, 0 imm values.
-    function MSTORE8(vEVMState memory evm) internal view {
+    function MSTORE8(vEVMState memory evm) internal pure {
         // do we have enough values on the stack?
         if (stack_underflow(evm, 2)) {
             return;
@@ -1022,7 +1070,7 @@ contract vEVM {
     // look up the corresponding value in storageData.
 
     // inst_size[0x54] = 1;	// SLOAD		0x54	Requires 1 stack value, 0 imm values.
-    function SLOAD(vEVMState memory evm) internal view {
+    function SLOAD(vEVMState memory evm) internal pure {
         // do we have enough values on the stack?
         if (stack_underflow(evm, 1)) {
             return;
@@ -1060,7 +1108,7 @@ contract vEVM {
     }
 
     // inst_size[0x55] = 1;	// SSTORE		0x55	Requires 2 stack values, 0 imm values.
-    function SSTORE(vEVMState memory evm) internal view {
+    function SSTORE(vEVMState memory evm) internal pure {
         if (stack_underflow(evm, 2)) {
             return;
         }
@@ -1100,7 +1148,7 @@ contract vEVM {
     }
 
     // inst_size[0x56] = 1;	// JUMP			0x56	Requires 1 stack value, 0 imm values.
-    function JUMP(vEVMState memory evm) internal view {
+    function JUMP(vEVMState memory evm) internal pure {
         if (stack_underflow(evm, 1)) {
             return;
         }
@@ -1123,7 +1171,7 @@ contract vEVM {
     }
 
     // inst_size[0x57] = 1;	// JUMPI		0x57	Requires 2 stack values, 0 imm values.
-    function JUMPI(vEVMState memory evm) internal view {
+    function JUMPI(vEVMState memory evm) internal pure {
         if (stack_underflow(evm, 2)) {
             return;
         }
@@ -1149,7 +1197,7 @@ contract vEVM {
     }
 
     // inst_size[0x58] = 1;	// PC			0x58	Requires 0 stack value, 0 imm values.
-    function PC(vEVMState memory evm) internal view {
+    function PC(vEVMState memory evm) internal pure {
         if (stack_overflow(evm, 1)) {
             return;
         }
@@ -1158,7 +1206,7 @@ contract vEVM {
     }
 
     // inst_size[0x59] = 1;	// MSIZE		0x59	Requires 0 stack value, 0 imm values.
-    function MSIZE(vEVMState memory evm) internal view {
+    function MSIZE(vEVMState memory evm) internal pure {
         if (stack_overflow(evm, 1)) {
             return;
         }
@@ -1175,7 +1223,7 @@ contract vEVM {
     // // stack manipluation
 
     // Generalized PUSH instruction
-    function PUSH(vEVMState memory evm, bytes memory data) internal view {
+    function PUSH(vEVMState memory evm, bytes memory data) internal pure {
         if (stack_overflow(evm, 1)) {
             return;
         }
@@ -1229,7 +1277,7 @@ contract vEVM {
     // inst_size[0x7F] = 33;	// PUSH32		0x7F	Requires 0 stack value, 32 imm values.
 
     // Generalized DUP instruction
-    function DUP(vEVMState memory evm, uint256 distance) internal view {
+    function DUP(vEVMState memory evm, uint256 distance) internal pure {
         if (stack_overflow(evm, 1)) {
             return;
         }
@@ -1261,7 +1309,7 @@ contract vEVM {
     // inst_size[0x8F] = 1;	// DUP16		0x8F	Requires 16 stack value, 0 imm values.
 
     // Generalized DUP instruction
-    function SWAP(vEVMState memory evm, uint256 distance) internal view {
+    function SWAP(vEVMState memory evm, uint256 distance) internal pure {
         if (stack_underflow(evm, distance)) {
             return;
         }
@@ -1305,7 +1353,7 @@ contract vEVM {
     // inst_size[0xF1] = 1;	// CALL			0xF1	Requires 7 stack value, 0 imm values.
     // inst_size[0xF2] = 1;	// CALLCODE		0xF2	Requires 7 stack value, 0 imm values.
     // inst_size[0xF3] = 1;	// RETURN		0xF3	Requires 2 stack value, 0 imm values.
-    function RETURN(vEVMState memory evm) internal view {
+    function RETURN(vEVMState memory evm) internal pure {
         if (stack_underflow(evm, 2)) {
             return;
         }
@@ -1321,7 +1369,7 @@ contract vEVM {
     // inst_size[0xF4] = 1;	// DELEGATECALL	0xF4	Requires 6 stack value, 0 imm values.
     // inst_size[0xFA] = 1;	// STATICCALL	0xFA	Requires 6 stack value, 0 imm values.
     // inst_size[0xFD] = 1;	// REVERT		0xFD	Requires 2 stack value, 0 imm values.
-    function REVERT(vEVMState memory evm) internal view {
+    function REVERT(vEVMState memory evm) internal pure {
         if (stack_underflow(evm, 2)) {
             return;
         }
