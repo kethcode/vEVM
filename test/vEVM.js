@@ -37,6 +37,11 @@ describe("vEVM", function () {
     const EVM = await ethers.getContractFactory("vEVM");
     const evm = await EVM.deploy();
 
+    await owner.sendTransaction({
+      to: evm.address,
+      value: ethers.utils.parseEther("1.0"), // Sends exactly 1.0 ether
+    });
+
     return { evm, owner, otherAccount };
   }
 
@@ -234,18 +239,42 @@ describe("vEVM", function () {
     //   });
     // });
 
-    describe("JUMP", function () {
+    // describe("JUMP", function () {
+    //   it("Should ", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x6000600756600A5B6001");
+    //     print_evm_state(result);
+    //   });
+    // });
+
+    // describe("JUMPI", function () {
+    //   it("Should ", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x6001600757600A5B6001");
+    //     print_evm_state(result);
+    //   });
+    // });
+
+    // describe("PC", function () {
+    //   it("Should ", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x600158");
+    //     print_evm_state(result);
+    //   });
+    // });
+
+    describe("ADDRESS", function () {
       it("Should ", async function () {
         const { evm } = await loadFixture(deployFixture);
-        let result = await evm.execute("0x6000600756600A5B6001");
+        let result = await evm.execute("0x30");
         print_evm_state(result);
       });
     });
 
-    describe("JUMPI", function () {
+    describe("BALANCE", function () {
       it("Should ", async function () {
         const { evm } = await loadFixture(deployFixture);
-        let result = await evm.execute("0x6001600757600A5B6001");
+        let result = await evm.execute("0x3031");
         print_evm_state(result);
       });
     });

@@ -5,6 +5,8 @@ import "hardhat/console.sol";
 
 contract vEVM {
     constructor() {}
+    fallback() external payable {}
+    receive() external payable {}
 
     struct vEVMState {
         bytes code;
@@ -93,6 +95,10 @@ contract vEVM {
                 BYTE(evm);
             } else if (opcode == 0x20) {
                 SHA3(evm);
+            } else if (opcode == 0x30) {
+                ADDRESS(evm);
+            } else if (opcode == 0x31) {
+                BALANCE(evm);
             } else if (opcode == 0x50) {
                 POP(evm);
             } else if (opcode == 0x51) {
@@ -109,6 +115,8 @@ contract vEVM {
                 JUMP(evm);
             } else if (opcode == 0x57) {
                 JUMPI(evm);
+            } else if (opcode == 0x58) {
+                PC(evm);
             } else if (opcode == 0x59) {
                 MSIZE(evm);
             } else if (opcode == 0x5B) {
@@ -661,7 +669,29 @@ contract vEVM {
 
     // // external data manupulation
     // inst_size[0x30] = 1;	// ADDRESS		0x30	Return vEVM address, or allow an override?
+    function ADDRESS(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(
+            uint256(uint160(address(this)))
+        );
+    }
+
     // inst_size[0x31] = 1;	// BALANCE		0x31	Requires 1 stack value, 0 imm values. Fetch an actual balance?
+    function BALANCE(vEVMState memory evm) internal view {
+        if (stack_underflow(evm, 1)) {
+            return;
+        }
+
+        address target = address(
+            uint160(uint256(evm.stack[evm.stack.length - 1]))
+        );
+
+        evm.stack[evm.stack.length - 1] = bytes32(target.balance);
+    }
+
     // inst_size[0x32] = 1;	// ORIGIN		0x32	Use actual tx.origin?
     // inst_size[0x33] = 1;	// CALLER		0x33	Use actual msg.sender?
     // inst_size[0x34] = 1;	// CALLVALUE	0x34	Use actual msg.value?
@@ -993,6 +1023,14 @@ contract vEVM {
     }
 
     // inst_size[0x58] = 1;	// PC			0x58	Requires 0 stack value, 0 imm values.
+    function PC(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(evm.pc);
+    }
+
     // inst_size[0x59] = 1;	// MSIZE		0x59	Requires 0 stack value, 0 imm values.
     function MSIZE(vEVMState memory evm) internal view {
         if (stack_overflow(evm, 1)) {

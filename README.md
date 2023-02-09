@@ -66,8 +66,8 @@ struct vEVMState {
 
 | Mnemonic       | OpCode | Status |
 | -------------- | ------ | ------ |
-| ADDRESS        | 0x30   |        |
-| BALANCE        | 0x31   |        |
+| ADDRESS        | 0x30   | Done   |
+| BALANCE        | 0x31   | Done   |
 | ORIGIN         | 0x32   |        |
 | CALLER         | 0x33   |        |
 | CALLVALUE      | 0x34   |        |
@@ -111,7 +111,7 @@ struct vEVMState {
 | SSTORE   | 0x55   | Done   |
 | JUMP     | 0x56   | Done   |
 | JUMPI    | 0x57   | Done   |
-| PC       | 0x58   |        |
+| PC       | 0x58   | Done   |
 | MSIZE    | 0x59   | Done   |
 | GAS      | 0x5a   |        |
 | JUMPDEST | 0x5b   | Done   |
