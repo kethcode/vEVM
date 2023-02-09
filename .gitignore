@@ -5,10 +5,22 @@ coverage.json
 typechain
 typechain-types
 
-# Hardhat files
 artifacts/build-info
 artifacts/hardhat
 cache
 
-
 package-lock.json
+
+
+backend/node_modules
+backend/.env
+backend/coverage
+backend/coverage.json
+backend/typechain
+backend/typechain-types
+
+backend/artifacts/build-info
+backend/artifacts/hardhat
+backend/cache
+
+backend/package-lock.json
