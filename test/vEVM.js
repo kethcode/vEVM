@@ -37,10 +37,10 @@ describe("vEVM", function () {
     const EVM = await ethers.getContractFactory("vEVM");
     const evm = await EVM.deploy();
 
-    await owner.sendTransaction({
-      to: evm.address,
-      value: ethers.utils.parseEther("1.0"), // Sends exactly 1.0 ether
-    });
+    // await owner.sendTransaction({
+    //   to: evm.address,
+    //   value: ethers.utils.parseEther("1.0"), // Sends exactly 1.0 ether
+    // });
 
     return { evm, owner, otherAccount };
   }
@@ -271,12 +271,12 @@ describe("vEVM", function () {
       });
     });
 
-    describe("BALANCE", function () {
-      it("Should ", async function () {
-        const { evm } = await loadFixture(deployFixture);
-        let result = await evm.execute("0x3031");
-        print_evm_state(result);
-      });
-    });
+    // describe("BALANCE", function () {
+    //   it("Should ", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x3031");
+    //     print_evm_state(result);
+    //   });
+    // });
   });
 });

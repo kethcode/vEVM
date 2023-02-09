@@ -4,11 +4,6 @@ pragma solidity ^0.8.17;
 import "hardhat/console.sol";
 
 contract vEVM {
-    constructor() {}
-
-    fallback() external payable {}
-
-    receive() external payable {}
 
     struct vEVMState {
         bytes code;
@@ -24,7 +19,7 @@ contract vEVM {
     }
 
     uint256 constant STACK_MAX_SIZE = 1024;
-    uint256 constant MEM_MAX_SIZE = 256;
+    uint256 constant MEM_MAX_SIZE = 1024;	// i dont need to limit this
 
     function execute(bytes calldata bytecode)
         external
@@ -1384,4 +1379,11 @@ contract vEVM {
     }
     // inst_size[0xFE] = 1; 	// INVALID		0xFE	Requires 0 stack value, 0 imm values.
     // inst_size[0xFF] = 1;	// SELFDESTRUCT	0xFF	Requires 1 stack value, 0 imm values.
+
+	constructor() {}
+	
+	// these were just for testing.  disable them for production
+    // fallback() external payable {}
+    // receive() external payable {}
+
 }
