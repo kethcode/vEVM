@@ -109,12 +109,12 @@ struct vEVMState {
 | MSTORE8  | 0x53   | Done   |
 | SLOAD    | 0x54   | Done   |
 | SSTORE   | 0x55   | Done   |
-| JUMP     | 0x56   |        |
-| JUMPI    | 0x57   |        |
+| JUMP     | 0x56   | Done   |
+| JUMPI    | 0x57   | Done   |
 | PC       | 0x58   |        |
 | MSIZE    | 0x59   | Done   |
 | GAS      | 0x5a   |        |
-| JUMPDEST | 0x5b   |        |
+| JUMPDEST | 0x5b   | Done   |
 | PUSH0    | 0x5f   |        |
 
 ### 0x60 range - pushes

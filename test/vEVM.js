@@ -2,6 +2,7 @@ const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
 
 const print_evm_state = (state) => {
+  console.log("  code:", state.code);
   console.log("    pc:", parseInt(state.pc));
   console.log("output:", state.output);
   console.log(" stack:", state.stack);
@@ -219,16 +220,32 @@ describe("vEVM", function () {
     //   });
     // });
 
-    describe("SWAPN", function () {
-      it("Should Duplicate the Nth stack item (from top of the stack) to the top of stack", async function () {
+    // describe("SWAPN", function () {
+    //   it("Should Duplicate the Nth stack item (from top of the stack) to the top of stack", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute(
+    //       "0x6000600160026003600460056006600760086009600A600B600C600D600E600F9A"
+    //     );
+    //     console.log(
+    //       "  code:",
+    //       "0x6000600160026003600460056006600760086009600A600B600C600D600E600F9A"
+    //     );
+    //     print_evm_state(result);
+    //   });
+    // });
+
+    describe("JUMP", function () {
+      it("Should ", async function () {
         const { evm } = await loadFixture(deployFixture);
-        let result = await evm.execute(
-          "0x6000600160026003600460056006600760086009600A600B600C600D600E600F9A"
-        );
-        console.log(
-          "  code:",
-          "0x6000600160026003600460056006600760086009600A600B600C600D600E600F9A"
-        );
+        let result = await evm.execute("0x6000600756600A5B6001");
+        print_evm_state(result);
+      });
+    });
+
+    describe("JUMPI", function () {
+      it("Should ", async function () {
+        const { evm } = await loadFixture(deployFixture);
+        let result = await evm.execute("0x6001600757600A5B6001");
         print_evm_state(result);
       });
     });

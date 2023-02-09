@@ -7,29 +7,16 @@ contract vEVM {
     constructor() {}
 
     struct vEVMState {
+        bytes code;
         uint256 pc;
         bytes32[] stack;
         bytes mem;
         uint256 msize;
-        // bytes32[] vStorage;
         bytes32[] storageKey;
         bytes32[] storageData;
         bytes output;
         bool running;
         bool reverting;
-        // bytes32[] logs;
-        // bytes32[] vTx;
-        // bytes32[] vBlock;
-        // bytes32[] account;
-        // bytes32[] vContract;
-        // bytes32[] call;
-        // bytes32[] state;
-        // bytes32[] opcode;
-        // bytes32[] gas;
-        // bytes32[] msize;
-        // bytes32[] jumpdest;
-        // bytes32[] push;
-        // bytes32[] invalid;
     }
 
     uint256 constant STACK_MAX_SIZE = 1024;
@@ -41,6 +28,8 @@ contract vEVM {
         returns (vEVMState memory)
     {
         vEVMState memory evm;
+
+        evm.code = bytecode;
 
         // create initial memory reservations
         evm.mem = expand_mem(evm.mem, 4);
@@ -116,8 +105,14 @@ contract vEVM {
                 SLOAD(evm);
             } else if (opcode == 0x55) {
                 SSTORE(evm);
+            } else if (opcode == 0x56) {
+                JUMP(evm);
+            } else if (opcode == 0x57) {
+                JUMPI(evm);
             } else if (opcode == 0x59) {
                 MSIZE(evm);
+            } else if (opcode == 0x5B) {
+                JUMPDEST(evm);
             } else if ((opcode >= 0x60) && (opcode <= 0x7F)) {
                 // PUSHX
                 uint256 data_size = uint8(opcode) - 0x5F;
@@ -949,7 +944,54 @@ contract vEVM {
     }
 
     // inst_size[0x56] = 1;	// JUMP			0x56	Requires 1 stack value, 0 imm values.
+    function JUMP(vEVMState memory evm) internal view {
+        if (stack_underflow(evm, 1)) {
+            return;
+        }
+
+        // get the jump destination
+        uint256 jump_dest = uint256(evm.stack[evm.stack.length - 1]);
+
+        // check if the jump destination is valid, JUMPDEST 0x5b
+        if (evm.code[jump_dest] != 0x5b) {
+            // invalid jump destination
+            return;
+        }
+
+        // jump to the destination
+        // -1 because the main loop increments
+        evm.pc = jump_dest - 1;
+
+        // pop stack
+        evm.stack = reduce_stack(evm.stack, 1);
+    }
+
     // inst_size[0x57] = 1;	// JUMPI		0x57	Requires 2 stack values, 0 imm values.
+    function JUMPI(vEVMState memory evm) internal view {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+
+        // get the jump destination
+        uint256 jump_dest = uint256(evm.stack[evm.stack.length - 1]);
+        uint256 conditional = uint256(evm.stack[evm.stack.length - 2]);
+
+        // check if the jump destination is valid, JUMPDEST 0x5b
+        if (evm.code[jump_dest] != 0x5b) {
+            // invalid jump destination
+            return;
+        }
+
+        // jump to the destination
+        // -1 because the main loop increments
+        if (conditional == 1) {
+            evm.pc = jump_dest - 1;
+        }
+
+        // pop stack
+        evm.stack = reduce_stack(evm.stack, 2);
+    }
+
     // inst_size[0x58] = 1;	// PC			0x58	Requires 0 stack value, 0 imm values.
     // inst_size[0x59] = 1;	// MSIZE		0x59	Requires 0 stack value, 0 imm values.
     function MSIZE(vEVMState memory evm) internal view {
@@ -962,6 +1004,9 @@ contract vEVM {
 
     // inst_size[0x5A] = 1;	// GAS			0x5A	Requires 0 stack value, 0 imm values. no messing with this for now.
     // inst_size[0x5B] = 1;	// JUMPDEST		0x5B	Requires 0 stack value, 0 imm values. basically a NOP
+    function JUMPDEST(vEVMState memory evm) internal pure {
+        // do nothing
+    }
 
     // // stack manipluation
 
@@ -1056,7 +1101,7 @@ contract vEVM {
         if (stack_underflow(evm, distance)) {
             return;
         }
-		
+
         // lets just use the actual damn opcode this time
         (
             evm.stack[evm.stack.length - 1],
