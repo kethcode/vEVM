@@ -5,7 +5,9 @@ import "hardhat/console.sol";
 
 contract vEVM {
     constructor() {}
+
     fallback() external payable {}
+
     receive() external payable {}
 
     struct vEVMState {
@@ -99,6 +101,18 @@ contract vEVM {
                 ADDRESS(evm);
             } else if (opcode == 0x31) {
                 BALANCE(evm);
+            } else if (opcode == 0x32) {
+                ORIGIN(evm);
+            } else if (opcode == 0x33) {
+                CALLER(evm);
+            } else if (opcode == 0x34) {
+                CALLVALUE(evm);
+            } else if (opcode == 0x38) {
+                CODESIZE(evm);
+            } else if (opcode == 0x3A) {
+                GASPRICE(evm);
+            } else if (opcode == 0x40) {
+                BLOCKHASH(evm);
             } else if (opcode == 0x50) {
                 POP(evm);
             } else if (opcode == 0x51) {
@@ -693,14 +707,54 @@ contract vEVM {
     }
 
     // inst_size[0x32] = 1;	// ORIGIN		0x32	Use actual tx.origin?
+    function ORIGIN(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(uint256(uint160(tx.origin)));
+    }
+
     // inst_size[0x33] = 1;	// CALLER		0x33	Use actual msg.sender?
+    function CALLER(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(uint256(uint160(msg.sender)));
+    }
+
     // inst_size[0x34] = 1;	// CALLVALUE	0x34	Use actual msg.value?
+    function CALLVALUE(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(msg.value);
+    }
+
     // inst_size[0x35] = 1;	// CALLDATALOAD	0x35	Requires 1 stack value, 0 imm values. Use actual msg.data?
     // inst_size[0x36] = 1;	// CALLDATASIZE	0x36	Requires 0 stack value, 0 imm values. Use actual msg.data?
     // inst_size[0x37] = 1;	// CALLDATACOPY	0x37	Requires 3 stack values, 0 imm values. Use actual msg.data?
     // inst_size[0x38] = 1;	// CODESIZE		0x38	Requires 0 stack value, 0 imm values. Use original size of input?
+    function CODESIZE(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(evm.code.length);
+    }
+
     // inst_size[0x39] = 1;	// CODECOPY		0x39	Requires 3 stack values, 0 imm values. Use original input?
     // inst_size[0x3A] = 1;	// GASPRICE		0x3A	Use actual tx.gasprice?
+    function GASPRICE(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(tx.gasprice);
+    }
+
     // inst_size[0x3B] = 1;	// EXTCODESIZE	0x3B	Requires 1 stack value, 0 imm values. Use actual size of code?
     // inst_size[0x3C] = 1;	// EXTCODECOPY	0x3C	Requires 4 stack values, 0 imm values. Use actual code?
     // inst_size[0x3D] = 1;	// RETURNDATASIZE	0x3D	Requires 0 stack value, 0 imm values. Use actual size of return data?
@@ -709,6 +763,15 @@ contract vEVM {
 
     // // block information
     // inst_size[0x40] = 1;	// BLOCKHASH	0x40	Requires 1 stack value, 0 imm values. Use actual blockhash?
+    function BLOCKHASH(vEVMState memory evm) internal view {
+        if (stack_underflow(evm, 1)) {
+            return;
+        }
+
+        uint256 block_num = uint256(evm.stack[evm.stack.length - 1]);
+        evm.stack[evm.stack.length - 1] = blockhash(block_num);
+    }
+
     // inst_size[0x41] = 1;	// COINBASE		0x41	Use actual block.coinbase?
     // inst_size[0x42] = 1;	// TIMESTAMP	0x42	Use actual block.timestamp?
     // inst_size[0x43] = 1;	// NUMBER		0x43	Use actual block.number?

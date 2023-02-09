@@ -68,15 +68,15 @@ struct vEVMState {
 | -------------- | ------ | ------ |
 | ADDRESS        | 0x30   | Done   |
 | BALANCE        | 0x31   | Done   |
-| ORIGIN         | 0x32   |        |
-| CALLER         | 0x33   |        |
-| CALLVALUE      | 0x34   |        |
+| ORIGIN         | 0x32   | Done   |
+| CALLER         | 0x33   | Done   |
+| CALLVALUE      | 0x34   | Done   |
 | CALLDATALOAD   | 0x35   |        |
 | CALLDATASIZE   | 0x36   |        |
 | CALLDATACOPY   | 0x37   |        |
-| CODESIZE       | 0x38   |        |
+| CODESIZE       | 0x38   | Done   |
 | CODECOPY       | 0x39   |        |
-| GASPRICE       | 0x3a   |        |
+| GASPRICE       | 0x3a   | Done   |
 | EXTCODESIZE    | 0x3b   |        |
 | EXTCODECOPY    | 0x3c   |        |
 | RETURNDATASIZE | 0x3d   |        |
@@ -87,7 +87,7 @@ struct vEVMState {
 
 | Mnemonic    | OpCode | Status |
 | ----------- | ------ | ------ |
-| BLOCKHASH   | 0x40   |        |
+| BLOCKHASH   | 0x40   | Done   |
 | COINBASE    | 0x41   |        |
 | TIMESTAMP   | 0x42   |        |
 | NUMBER      | 0x43   |        |
