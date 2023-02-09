@@ -4,6 +4,21 @@
 
 ```await evm.execute("0x60016002600360040160005260206000F3");```
 
+returns
+
+```    struct vEVMState {
+        uint256 pc;
+        bytes32[] stack;
+        bytes mem;
+        uint256 msize;
+        bytes32[] storageKey;
+        bytes32[] storageData;
+        bytes output;
+        bool running;
+        bool reverting;
+    }
+```
+
 ### 0x00 range - arithmetic ops
 
 | Mnemonic   | OpCode | Status |
