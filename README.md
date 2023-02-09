@@ -88,16 +88,16 @@ struct vEVMState {
 | Mnemonic    | OpCode | Status |
 | ----------- | ------ | ------ |
 | BLOCKHASH   | 0x40   | Done   |
-| COINBASE    | 0x41   |        |
-| TIMESTAMP   | 0x42   |        |
-| NUMBER      | 0x43   |        |
+| COINBASE    | 0x41   | Done   |
+| TIMESTAMP   | 0x42   | Done   |
+| NUMBER      | 0x43   | Done   |
 | DIFFICULTY  | 0x44   |        |
 | RANDOM      | 0x44   |        |
 | PREVRANDAO  | 0x44   |        |
 | GASLIMIT    | 0x45   |        |
-| CHAINID     | 0x46   |        |
-| SELFBALANCE | 0x47   |        |
-| BASEFEE     | 0x48   |        |
+| CHAINID     | 0x46   | Done   |
+| SELFBALANCE | 0x47   | Done   |
+| BASEFEE     | 0x48   | Done   |
 
 ### 0x50 range - 'storage' and execution
 

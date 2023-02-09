@@ -113,6 +113,18 @@ contract vEVM {
                 GASPRICE(evm);
             } else if (opcode == 0x40) {
                 BLOCKHASH(evm);
+            } else if (opcode == 0x41) {
+                COINBASE(evm);
+            } else if (opcode == 0x42) {
+                TIMESTAMP(evm);
+            } else if (opcode == 0x43) {
+                NUMBER(evm);
+            } else if (opcode == 0x46) {
+                CHAINID(evm);
+            } else if (opcode == 0x47) {
+                SELFBALANCE(evm);
+            } else if (opcode == 0x48) {
+                BASEFEE(evm);
             } else if (opcode == 0x50) {
                 POP(evm);
             } else if (opcode == 0x51) {
@@ -773,13 +785,64 @@ contract vEVM {
     }
 
     // inst_size[0x41] = 1;	// COINBASE		0x41	Use actual block.coinbase?
+    function COINBASE(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(
+            uint256(uint160(address(block.coinbase)))
+        );
+    }
+
     // inst_size[0x42] = 1;	// TIMESTAMP	0x42	Use actual block.timestamp?
+    function TIMESTAMP(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(block.timestamp);
+    }
+
     // inst_size[0x43] = 1;	// NUMBER		0x43	Use actual block.number?
+    function NUMBER(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(block.number);
+    }
+
     // inst_size[0x44] = 1;	// PREVRANDAO	0x44	Use actual block.PREVRANDAO?
     // inst_size[0x45] = 1;	// GASLIMIT		0x45	Use actual block.gaslimit?
     // inst_size[0x46] = 1;	// CHAINID		0x46	Use actual block.chainid?
+    function CHAINID(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(block.chainid);
+    }
+
     // inst_size[0x47] = 1;	// SELFBALANCE	0x47	Same as calling BALANCE on vEVM address, but cheaper
+    function SELFBALANCE(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(address(this).balance);
+    }
+
     // inst_size[0x48] = 1;	// BASEFEE		0x48	Use actual basefee?
+    function BASEFEE(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(block.basefee);
+    }
 
     // // memory manipluation
     // inst_size[0x50] = 1;	// POP			0x50	Requires 1 stack value, 0 imm values.
