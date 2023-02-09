@@ -1,5 +1,9 @@
 # vEVM
 
+## example
+
+```await evm.execute("0x60016002600360040160005260206000F3");```
+
 ### 0x00 range - arithmetic ops
 
 | Mnemonic   | OpCode | Status |
