@@ -99,92 +99,92 @@
 
 ### 0x60 range - pushes
 
-| Mnemonic | OpCode      | Status |
-| -------- | ----------- | ------ |
-| PUSH1    | 0x60 + iota | Done   |
-| PUSH2    |             | Done   |
-| PUSH3    |             | Done   |
-| PUSH4    |             | Done   |
-| PUSH5    |             | Done   |
-| PUSH6    |             | Done   |
-| PUSH7    |             | Done   |
-| PUSH8    |             | Done   |
-| PUSH9    |             | Done   |
-| PUSH10   |             | Done   |
-| PUSH11   |             | Done   |
-| PUSH12   |             | Done   |
-| PUSH13   |             | Done   |
-| PUSH14   |             | Done   |
-| PUSH15   |             | Done   |
-| PUSH16   |             | Done   |
-| PUSH17   |             | Done   |
-| PUSH18   |             | Done   |
-| PUSH19   |             | Done   |
-| PUSH20   |             | Done   |
-| PUSH21   |             | Done   |
-| PUSH22   |             | Done   |
-| PUSH23   |             | Done   |
-| PUSH24   |             | Done   |
-| PUSH25   |             | Done   |
-| PUSH26   |             | Done   |
-| PUSH27   |             | Done   |
-| PUSH28   |             | Done   |
-| PUSH29   |             | Done   |
-| PUSH30   |             | Done   |
-| PUSH31   |             | Done   |
-| PUSH32   |             | Done   |
+| Mnemonic | OpCode | Status |
+| -------- | ------ | ------ |
+| PUSH1    | 0x60   | Done   |
+| PUSH2    | 0x61   | Done   |
+| PUSH3    | 0x62   | Done   |
+| PUSH4    | 0x63   | Done   |
+| PUSH5    | 0x64   | Done   |
+| PUSH6    | 0x65   | Done   |
+| PUSH7    | 0x66   | Done   |
+| PUSH8    | 0x67   | Done   |
+| PUSH9    | 0x68   | Done   |
+| PUSH10   | 0x69   | Done   |
+| PUSH11   | 0x6a   | Done   |
+| PUSH12   | 0x6b   | Done   |
+| PUSH13   | 0x6c   | Done   |
+| PUSH14   | 0x6d   | Done   |
+| PUSH15   | 0x6e   | Done   |
+| PUSH16   | 0x6f   | Done   |
+| PUSH17   | 0x70   | Done   |
+| PUSH18   | 0x71   | Done   |
+| PUSH19   | 0x72   | Done   |
+| PUSH20   | 0x73   | Done   |
+| PUSH21   | 0x74   | Done   |
+| PUSH22   | 0x75   | Done   |
+| PUSH23   | 0x76   | Done   |
+| PUSH24   | 0x77   | Done   |
+| PUSH25   | 0x78   | Done   |
+| PUSH26   | 0x79   | Done   |
+| PUSH27   | 0x7a   | Done   |
+| PUSH28   | 0x7b   | Done   |
+| PUSH29   | 0x7c   | Done   |
+| PUSH30   | 0x7d   | Done   |
+| PUSH31   | 0x7e   | Done   |
+| PUSH32   | 0x7f   | Done   |
 
 ### 0x80 range - dups
 
-| Mnemonic           | OpCode | Status |
-| ------------------ | ------ | ------ |
-| DUP1 = 0x80 + iota |        | Done   |
-| DUP2               |        | Done   |
-| DUP3               |        | Done   |
-| DUP4               |        | Done   |
-| DUP5               |        | Done   |
-| DUP6               |        | Done   |
-| DUP7               |        | Done   |
-| DUP8               |        | Done   |
-| DUP9               |        | Done   |
-| DUP10              |        | Done   |
-| DUP11              |        | Done   |
-| DUP12              |        | Done   |
-| DUP13              |        | Done   |
-| DUP14              |        | Done   |
-| DUP15              |        | Done   |
-| DUP16              |        | Done   |
+| Mnemonic | OpCode | Status |
+| -------- | ------ | ------ |
+| DUP1     | 0x80   | Done   |
+| DUP2     | 0x81   | Done   |
+| DUP3     | 0x82   | Done   |
+| DUP4     | 0x83   | Done   |
+| DUP5     | 0x84   | Done   |
+| DUP6     | 0x85   | Done   |
+| DUP7     | 0x86   | Done   |
+| DUP8     | 0x87   | Done   |
+| DUP9     | 0x88   | Done   |
+| DUP10    | 0x89   | Done   |
+| DUP11    | 0x8a   | Done   |
+| DUP12    | 0x8b   | Done   |
+| DUP13    | 0x8c   | Done   |
+| DUP14    | 0x8d   | Done   |
+| DUP15    | 0x8e   | Done   |
+| DUP16    | 0x8f   | Done   |
 
 ### 0x90 range - swaps
 
-| Mnemonic            | OpCode | Status |
-| ------------------- | ------ | ------ |
-| SWAP1 = 0x90 + iota |        |        |
-| SWAP2               |        |        |
-| SWAP3               |        |        |
-| SWAP4               |        |        |
-| SWAP5               |        |        |
-| SWAP6               |        |        |
-| SWAP7               |        |        |
-| SWAP8               |        |        |
-| SWAP9               |        |        |
-| SWAP10              |        |        |
-| SWAP11              |        |        |
-| SWAP12              |        |        |
-| SWAP13              |        |        |
-| SWAP14              |        |        |
-| SWAP15              |        |        |
-| SWAP16              |        |        |
+| Mnemonic | OpCode | Status |
+| -------- | ------ | ------ |
+| SWAP1    | 0x90   | Done   |
+| SWAP2    | 0x91   | Done   |
+| SWAP3    | 0x92   | Done   |
+| SWAP4    | 0x93   | Done   |
+| SWAP5    | 0x94   | Done   |
+| SWAP6    | 0x95   | Done   |
+| SWAP7    | 0x96   | Done   |
+| SWAP8    | 0x97   | Done   |
+| SWAP9    | 0x98   | Done   |
+| SWAP10   | 0x99   | Done   |
+| SWAP11   | 0x9a   | Done   |
+| SWAP12   | 0x9b   | Done   |
+| SWAP13   | 0x9c   | Done   |
+| SWAP14   | 0x9d   | Done   |
+| SWAP15   | 0x9e   | Done   |
+| SWAP16   | 0x9f   | Done   |
 
 ### 0xa0 range - logging ops
 
-| Mnemonic | OpCode      | Status |
-| -------- | ----------- | ------ |
-| LOG0     | 0xa0 + iota |
-| LOG1     |             |        |
-| LOG2     |             |        |
-| LOG3     |             |        |
-| LOG4     |             |        |
+| Mnemonic | OpCode | Status |
+| -------- | ------ | ------ |
+| LOG0     | 0xa0   |
+| LOG1     | 0xa1   |        |
+| LOG2     | 0xa2   |        |
+| LOG3     | 0xa3   |        |
+| LOG4     | 0xa4   |        |
 
 ### 0xb0 range
 

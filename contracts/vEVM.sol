@@ -127,6 +127,10 @@ contract vEVM {
                 // DUPX
                 uint256 distance = uint8(opcode) - 0x7F;
                 DUP(evm, distance);
+            } else if ((opcode >= 0x90) && (opcode <= 0x9F)) {
+                // SWAPX
+                uint256 distance = uint8(opcode) - 0x8F;
+                SWAP(evm, distance);
             } else if (opcode == 0xF3) {
                 RETURN(evm);
             } else if (opcode == 0xFD) {
@@ -1015,7 +1019,7 @@ contract vEVM {
     // inst_size[0x7E] = 32;	// PUSH31		0x7E	Requires 0 stack value, 31 imm values.
     // inst_size[0x7F] = 33;	// PUSH32		0x7F	Requires 0 stack value, 32 imm values.
 
-    // Generalized PUSH instruction
+    // Generalized DUP instruction
     function DUP(vEVMState memory evm, uint256 distance) internal view {
         if (stack_overflow(evm, 1)) {
             return;
@@ -1046,6 +1050,22 @@ contract vEVM {
     // inst_size[0x8D] = 1;	// DUP14		0x8D	Requires 14 stack value, 0 imm values.
     // inst_size[0x8E] = 1;	// DUP15		0x8E	Requires 15 stack value, 0 imm values.
     // inst_size[0x8F] = 1;	// DUP16		0x8F	Requires 16 stack value, 0 imm values.
+
+    // Generalized DUP instruction
+    function SWAP(vEVMState memory evm, uint256 distance) internal view {
+        if (stack_underflow(evm, distance)) {
+            return;
+        }
+		
+        // lets just use the actual damn opcode this time
+        (
+            evm.stack[evm.stack.length - 1],
+            evm.stack[evm.stack.length - 1 - distance]
+        ) = (
+            evm.stack[evm.stack.length - 1 - distance],
+            evm.stack[evm.stack.length - 1]
+        );
+    }
 
     // inst_size[0x90] = 1;	// SWAP1		0x90	Requires 2 stack value, 0 imm values.
     // inst_size[0x91] = 1;	// SWAP2		0x91	Requires 3 stack value, 0 imm values.

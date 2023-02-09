@@ -205,15 +205,29 @@ describe("vEVM", function () {
     //   });
     // });
 
-    describe("DUPN", function () {
+    // describe("DUPN", function () {
+    //   it("Should Duplicate the Nth stack item (from top of the stack) to the top of stack", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute(
+    //       "0x6000600160026003600460056006600760086009600A600B600C600D600E600F8A"
+    //     );
+    //     console.log(
+    //       "  code:",
+    //       "0x6000600160026003600460056006600760086009600A600B600C600D600E600F80"
+    //     );
+    //     print_evm_state(result);
+    //   });
+    // });
+
+    describe("SWAPN", function () {
       it("Should Duplicate the Nth stack item (from top of the stack) to the top of stack", async function () {
         const { evm } = await loadFixture(deployFixture);
         let result = await evm.execute(
-          "0x6000600160026003600460056006600760086009600A600B600C600D600E600F8A"
+          "0x6000600160026003600460056006600760086009600A600B600C600D600E600F9A"
         );
         console.log(
           "  code:",
-          "0x6000600160026003600460056006600760086009600A600B600C600D600E600F80"
+          "0x6000600160026003600460056006600760086009600A600B600C600D600E600F9A"
         );
         print_evm_state(result);
       });
