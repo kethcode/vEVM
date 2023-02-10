@@ -2,7 +2,7 @@
 
 ## example
 
-https://goerli-optimism.etherscan.io/tx/0x3bdeebb15adcecce4fa989f969bdac5eed37e691f2479ad4d7e04fa3a641a349
+https://goerli-optimism.etherscan.io/address/0x6a1707Eaf4cA180A71dB1B74d20c08Fd2597fdD2
 
 ```
 await evm.execute("0x60016002600360040160005260206000F3");

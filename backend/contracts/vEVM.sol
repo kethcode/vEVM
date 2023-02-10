@@ -28,7 +28,7 @@ contract vEVM {
 
     function execute(bytes calldata bytecode)
         external
-        pure
+        view
         returns (vEVMState memory)
     {
         vEVMState memory evm;
