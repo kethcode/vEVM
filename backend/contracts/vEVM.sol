@@ -1,10 +1,15 @@
 // SPDX-License-Identifier: mine
 pragma solidity ^0.8.17;
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
+
+/**
+ * @title  Virtual EVM
+ * @author Kethic <kethic@kethic.com> @kethcode
+ * @notice Gasless Arbitrary Bytecode Execution
+ */
 
 contract vEVM {
-
     struct vEVMState {
         bytes code;
         uint256 pc;
@@ -19,25 +24,19 @@ contract vEVM {
     }
 
     uint256 constant STACK_MAX_SIZE = 1024;
-    uint256 constant MEM_MAX_SIZE = 1024;	// i dont need to limit this
+    uint256 constant MEM_MAX_SIZE = 1024; // i dont need to limit this
 
     function execute(bytes calldata bytecode)
         external
-        view
+        pure
         returns (vEVMState memory)
     {
         vEVMState memory evm;
 
         evm.code = bytecode;
 
-        // create initial memory reservations
-        evm.mem = expand_mem(evm.mem, 4);
-        memory_write_bytes32(evm.mem, uint256(0x00), bytes32(uint256(0x00)));
-        memory_write_bytes32(evm.mem, uint256(0x20), bytes32(uint256(0x00)));
-        memory_write_bytes32(evm.mem, uint256(0x40), bytes32(uint256(0x80)));
-        memory_write_bytes32(evm.mem, uint256(0x60), bytes32(uint256(0x00)));
-
         evm.pc = 0;
+        evm.msize = 0;
         evm.running = true;
         evm.reverting = false;
 
@@ -252,6 +251,29 @@ contract vEVM {
         return newbuf;
     }
 
+    function stack_read_as_uint256(bytes32 buf)
+        internal
+        pure
+        returns (uint256)
+    {
+        uint256 offset = 0;
+        for (uint256 i = 32; i > 0; i--) {
+            if (bytes8(buf[i - 1]) == 0) {
+                offset += 1;
+            } else {
+                break;
+            }
+        }
+
+        bytes32 data32 = bytes32(0);
+        for (uint256 i = 0; i < 32; i++) {
+            if (i >= offset) {
+                data32 |= bytes32(buf[i - offset]) >> (i * 8);
+            }
+        }
+        return uint256(data32);
+    }
+
     function memory_read_bytes(
         bytes memory mem,
         uint256 start,
@@ -276,66 +298,6 @@ contract vEVM {
 
         return value;
     }
-
-    // function memory_write_bytes(
-    //     bytes memory mem,
-    //     uint256 start,
-    //     uint256 size
-    // ) private view returns (bytes memory value) {
-
-    // 	// we're reverting so just dump this at the end of memory
-    //     uint256 memory_needed = size;
-
-    //     // if we're writing to free memory, check if we need to expand it
-    //     if (start_position >= 0x80) {
-    //         memory_needed =
-    //             (start_position + uint256(0x20)) -
-    //             uint256(memory_read_bytes32(evm.mem, uint256(0x40)));
-    //     } else {
-    //         // nothing to do here.  you're writing to reserved memory
-    //         // so you're on your own.  try not to fuck it up.
-    //     }
-
-    //     // expand memory if needed
-    //     if (memory_needed > 0) {
-    //         // how many memory slots do we need to expand by?
-    //         evm.mem = expand_mem(
-    //             evm.mem,
-    //             (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
-    //         );
-    //     }
-
-    //     // store value
-    //     memory_write_bytes32(
-    //         evm.mem,
-    //         //            uint256(0x80) + start_position,
-    //         start_position,
-    //         evm.stack[evm.stack.length - 2]
-    //     );
-
-    //     // if we wrote past the old free memory pointer, update it
-    //     if (
-    //         //uint256(0x80) + start_position + uint256(0x20) >
-    //         start_position + uint256(0x20) >
-    //         uint256(memory_read_bytes32(evm.mem, uint256(0x40)))
-    //     ) {
-    //         memory_write_bytes32(
-    //             evm.mem,
-    //             uint256(0x40),
-    //             //bytes32(uint256(0x80) + start_position + uint256(0x20))
-    //             bytes32(start_position + uint256(0x20))
-    //         );
-    //     }
-
-    //     // pop stack
-    //     evm.stack = reduce_stack(evm.stack, 2);
-
-    //     for (uint256 i = 0; i < size; i++) {
-    //          mem[start + i] = value[i];
-    //     }
-
-    //     return value;
-    // }
 
     function memory_write_bytes32(
         bytes memory mem,
@@ -372,8 +334,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            uint256(evm.stack[evm.stack.length - 1]) +
-                uint256(evm.stack[evm.stack.length - 2])
+            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) +
+                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = reduce_stack(evm.stack, 1);
     }
@@ -384,8 +346,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            uint256(evm.stack[evm.stack.length - 1]) *
-                uint256(evm.stack[evm.stack.length - 2])
+            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) *
+                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = reduce_stack(evm.stack, 1);
     }
@@ -396,8 +358,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            uint256(evm.stack[evm.stack.length - 1]) -
-                uint256(evm.stack[evm.stack.length - 2])
+            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) -
+                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = reduce_stack(evm.stack, 1);
     }
@@ -408,8 +370,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            uint256(evm.stack[evm.stack.length - 1]) /
-                uint256(evm.stack[evm.stack.length - 2])
+            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) /
+                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = reduce_stack(evm.stack, 1);
     }
@@ -436,8 +398,8 @@ contract vEVM {
         }
 
         evm.stack[evm.stack.length - 2] = bytes32(
-            uint256(evm.stack[evm.stack.length - 1]) %
-                uint256(evm.stack[evm.stack.length - 2])
+            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) %
+                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
         );
 
         evm.stack = reduce_stack(evm.stack, 1);
@@ -467,9 +429,9 @@ contract vEVM {
             evm.stack[evm.stack.length - 3] = bytes32(0);
         } else {
             evm.stack[evm.stack.length - 3] = bytes32(
-                (uint256(evm.stack[evm.stack.length - 1]) +
-                    uint256(evm.stack[evm.stack.length - 2])) %
-                    uint256(evm.stack[evm.stack.length - 3])
+                (stack_read_as_uint256(evm.stack[evm.stack.length - 1]) +
+                    stack_read_as_uint256(evm.stack[evm.stack.length - 2])) %
+                    stack_read_as_uint256(evm.stack[evm.stack.length - 3])
             );
         }
         evm.stack = reduce_stack(evm.stack, 2);
@@ -484,9 +446,9 @@ contract vEVM {
             evm.stack[evm.stack.length - 3] = bytes32(0);
         } else {
             evm.stack[evm.stack.length - 3] = bytes32(
-                (uint256(evm.stack[evm.stack.length - 1]) *
-                    uint256(evm.stack[evm.stack.length - 2])) %
-                    uint256(evm.stack[evm.stack.length - 3])
+                (stack_read_as_uint256(evm.stack[evm.stack.length - 1]) *
+                    stack_read_as_uint256(evm.stack[evm.stack.length - 2])) %
+                    stack_read_as_uint256(evm.stack[evm.stack.length - 3])
             );
         }
         evm.stack = reduce_stack(evm.stack, 2);
@@ -498,8 +460,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            uint256(evm.stack[evm.stack.length - 1]) **
-                uint256(evm.stack[evm.stack.length - 2])
+            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) **
+                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = reduce_stack(evm.stack, 1);
     }
@@ -512,8 +474,8 @@ contract vEVM {
         }
         evm.stack[evm.stack.length - 2] = bytes32(
             uint256(
-                uint256(evm.stack[evm.stack.length - 1]) <
-                    uint256(evm.stack[evm.stack.length - 2])
+                stack_read_as_uint256(evm.stack[evm.stack.length - 1]) <
+                    stack_read_as_uint256(evm.stack[evm.stack.length - 2])
                     ? 1
                     : 0
             )
@@ -528,8 +490,8 @@ contract vEVM {
         }
         evm.stack[evm.stack.length - 2] = bytes32(
             uint256(
-                uint256(evm.stack[evm.stack.length - 1]) >
-                    uint256(evm.stack[evm.stack.length - 2])
+                stack_read_as_uint256(evm.stack[evm.stack.length - 1]) >
+                    stack_read_as_uint256(evm.stack[evm.stack.length - 2])
                     ? 1
                     : 0
             )
@@ -576,8 +538,8 @@ contract vEVM {
         }
         evm.stack[evm.stack.length - 2] = bytes32(
             uint256(
-                uint256(evm.stack[evm.stack.length - 1]) ==
-                    uint256(evm.stack[evm.stack.length - 2])
+                stack_read_as_uint256(evm.stack[evm.stack.length - 1]) ==
+                    stack_read_as_uint256(evm.stack[evm.stack.length - 2])
                     ? 1
                     : 0
             )
@@ -591,7 +553,11 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 1] = bytes32(
-            uint256(uint256(evm.stack[evm.stack.length - 1]) == 0 ? 1 : 0)
+            uint256(
+                stack_read_as_uint256(evm.stack[evm.stack.length - 1]) == 0
+                    ? 1
+                    : 0
+            )
         );
     }
 
@@ -693,13 +659,8 @@ contract vEVM {
         uint256 memory_needed = 0;
 
         // if we're reading from free memory, check if we need to expand it
-        if (start_position >= 0x80) {
-            memory_needed =
-                (start_position + size) -
-                uint256(memory_read_bytes32(evm.mem, uint256(0x40)));
-        } else {
-            // nothing to do here.  you're reading from reserved memory
-            // so it's guarenteed to be allocated
+        if ((start_position + size) >= evm.msize) {
+            memory_needed = (start_position + size) - evm.msize;
         }
 
         // expand memory if needed
@@ -709,6 +670,8 @@ contract vEVM {
                 evm.mem,
                 (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
             );
+
+			evm.msize = evm.mem.length;
         }
 
         // read value
@@ -719,19 +682,6 @@ contract vEVM {
         );
 
         evm.stack[evm.stack.length - 2] = keccak256(to_be_hashed);
-
-        // if we read past the old free memory pointer,
-        // then we expanded memory, so update the pointer
-        if (
-            start_position + size >
-            uint256(memory_read_bytes32(evm.mem, uint256(0x40)))
-        ) {
-            memory_write_bytes32(
-                evm.mem,
-                uint256(0x40),
-                bytes32(start_position + size)
-            );
-        }
 
         evm.stack = reduce_stack(evm.stack, 1);
     }
@@ -901,21 +851,17 @@ contract vEVM {
         if (stack_underflow(evm, 1)) {
             return;
         }
-
         // get the memory address to read from
-        uint256 start_position = uint256(evm.stack[evm.stack.length - 1]);
+        uint256 start_position = stack_read_as_uint256(
+            evm.stack[evm.stack.length - 1]
+        );
 
         // how much memory do we expect is allocated?
         uint256 memory_needed = 0;
 
         // if we're readnig from free memory, check if we need to expand it
-        if (start_position >= 0x80) {
-            memory_needed =
-                (start_position + uint256(0x20)) -
-                uint256(memory_read_bytes32(evm.mem, uint256(0x40)));
-        } else {
-            // nothing to do here.  you're reading from reserved memory
-            // so it's guarenteed to be allocated
+        if ((start_position + uint256(0x20)) >= evm.msize) {
+            memory_needed = (start_position + uint256(0x20)) - evm.msize;
         }
 
         // expand memory if needed
@@ -925,6 +871,7 @@ contract vEVM {
                 evm.mem,
                 (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
             );
+            evm.msize = evm.mem.length;
         }
 
         // read value
@@ -932,19 +879,6 @@ contract vEVM {
             evm.mem,
             start_position
         );
-
-        // if we read past the old free memory pointer,
-        // then we expanded memory, so update the pointer
-        if (
-            start_position + uint256(0x20) >
-            uint256(memory_read_bytes32(evm.mem, uint256(0x40)))
-        ) {
-            memory_write_bytes32(
-                evm.mem,
-                uint256(0x40),
-                bytes32(start_position + uint256(0x20))
-            );
-        }
     }
 
     // inst_size[0x52] = 1;	// MSTORE		0x52	Requires 2 stack values, 0 imm values.
@@ -955,20 +889,16 @@ contract vEVM {
         }
 
         // get the memory address to write to
-        uint256 start_position = uint256(evm.stack[evm.stack.length - 1]);
+        uint256 start_position = stack_read_as_uint256(
+            evm.stack[evm.stack.length - 1]
+        );
 
         // how much memory do we need?
-        //uint256 memory_needed = (uint256(0x80) +
         uint256 memory_needed = 0;
 
         // if we're writing to free memory, check if we need to expand it
-        if (start_position >= 0x80) {
-            memory_needed =
-                (start_position + uint256(0x20)) -
-                uint256(memory_read_bytes32(evm.mem, uint256(0x40)));
-        } else {
-            // nothing to do here.  you're writing to reserved memory
-            // so you're on your own.  try not to fuck it up.
+        if ((start_position + uint256(0x20)) >= evm.msize) {
+            memory_needed = (start_position + uint256(0x20)) - evm.msize;
         }
 
         // expand memory if needed
@@ -978,29 +908,15 @@ contract vEVM {
                 evm.mem,
                 (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
             );
+            evm.msize = evm.mem.length;
         }
 
         // store value
         memory_write_bytes32(
             evm.mem,
-            //            uint256(0x80) + start_position,
             start_position,
-            evm.stack[evm.stack.length - 2]
+            bytes32(stack_read_as_uint256(evm.stack[evm.stack.length - 2]))
         );
-
-        // if we wrote past the old free memory pointer, update it
-        if (
-            //uint256(0x80) + start_position + uint256(0x20) >
-            start_position + uint256(0x20) >
-            uint256(memory_read_bytes32(evm.mem, uint256(0x40)))
-        ) {
-            memory_write_bytes32(
-                evm.mem,
-                uint256(0x40),
-                //bytes32(uint256(0x80) + start_position + uint256(0x20))
-                bytes32(start_position + uint256(0x20))
-            );
-        }
 
         // pop stack
         evm.stack = reduce_stack(evm.stack, 2);
@@ -1019,13 +935,9 @@ contract vEVM {
         // how much memory do we need?
         uint256 memory_needed = 0;
 
-        if (start_position >= 0x80) {
-            memory_needed =
-                (start_position + uint256(0x01)) -
-                uint256(memory_read_bytes32(evm.mem, uint256(0x40)));
-        } else {
-            // nothing to do here.  you're writing to reserved memory
-            // so you're on your own.  try not to fuck it up.
+        // if we're writing to free memory, check if we need to expand it
+        if ((start_position + uint256(0x01)) >= evm.msize) {
+            memory_needed = (start_position + uint256(0x01)) - evm.msize;
         }
 
         // expand memory if needed
@@ -1035,6 +947,8 @@ contract vEVM {
                 evm.mem,
                 (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
             );
+
+            evm.msize = evm.mem.length;
         }
 
         // store value
@@ -1043,18 +957,6 @@ contract vEVM {
             start_position,
             bytes1(bytes32(evm.stack[evm.stack.length - 2] << (31 * 8)))
         );
-
-        // if we wrote past the old free memory pointer, update it
-        if (
-            start_position + uint256(0x01) >
-            uint256(memory_read_bytes32(evm.mem, uint256(0x40)))
-        ) {
-            memory_write_bytes32(
-                evm.mem,
-                uint256(0x40),
-                bytes32(start_position + uint256(0x01))
-            );
-        }
 
         // pop stack
         evm.stack = reduce_stack(evm.stack, 2);
@@ -1224,14 +1126,8 @@ contract vEVM {
         }
 
         bytes32 data32 = bytes32(0);
-        uint256 offset = 32 - data.length;
-
-        for (uint256 i = 0; i < 32; i++) {
-            if (i < offset) {
-                // do nothing
-            } else {
-                data32 |= bytes32(data[i - offset]) >> (i * 8);
-            }
+        for (uint256 i = 0; i < data.length; i++) {
+            data32 |= bytes32(data[i]) >> (i * 8);
         }
 
         evm.stack = expand_stack(evm.stack, 1);
@@ -1353,8 +1249,8 @@ contract vEVM {
             return;
         }
 
-        uint256 start = uint256(evm.stack[evm.stack.length - 1]);
-        uint256 size = uint256(evm.stack[evm.stack.length - 2]);
+        uint256 start = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
+        uint256 size = stack_read_as_uint256(evm.stack[evm.stack.length - 2]);
 
         evm.output = memory_read_bytes(evm.mem, start, size);
         evm.stack = reduce_stack(evm.stack, 2);
@@ -1369,21 +1265,21 @@ contract vEVM {
             return;
         }
 
-        uint256 start = uint256(evm.stack[evm.stack.length - 1]);
-        uint256 size = uint256(evm.stack[evm.stack.length - 2]);
+        uint256 start = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
+        uint256 size = stack_read_as_uint256(evm.stack[evm.stack.length - 2]);
 
         evm.output = memory_read_bytes(evm.mem, start, size);
         evm.stack = reduce_stack(evm.stack, 2);
         evm.reverting = true;
         evm.running = false;
     }
+
     // inst_size[0xFE] = 1; 	// INVALID		0xFE	Requires 0 stack value, 0 imm values.
     // inst_size[0xFF] = 1;	// SELFDESTRUCT	0xFF	Requires 1 stack value, 0 imm values.
 
-	constructor() {}
-	
-	// these were just for testing.  disable them for production
+    constructor() {}
+
+    // these were just for testing.  disable them for production
     // fallback() external payable {}
     // receive() external payable {}
-
 }

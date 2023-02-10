@@ -46,14 +46,13 @@ describe("vEVM", function () {
   }
 
   describe("execute", function () {
-    // describe("PUSH8", function () {
-    //   it("Should push a byte8 to the stack", async function () {
-    //     const { evm } = await loadFixture(deployFixture);
-    //     let result = await evm.execute("0x670102030405060708");
-    //     console.log("  code:", "0x670102030405060708");
-    //     print_evm_state(result);
-    //   });
-    // });
+//     describe("PUSH8", function () {
+//       it("Should push a byte8 to the stack", async function () {
+//         const { evm } = await loadFixture(deployFixture);
+//         let result = await evm.execute("0x670102030405060708");
+//         print_evm_state(result);
+//       });
+//     });
 
     // describe("PUSH1", function () {
     //   it("Should push a byte1 to the stack", async function () {
@@ -263,13 +262,13 @@ describe("vEVM", function () {
     //   });
     // });
 
-    describe("ADDRESS", function () {
-      it("Should ", async function () {
-        const { evm } = await loadFixture(deployFixture);
-        let result = await evm.execute("0x30");
-        print_evm_state(result);
-      });
-    });
+    // describe("ADDRESS", function () {
+    //   it("Should ", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x30");
+    //     print_evm_state(result);
+    //   });
+    // });
 
     // describe("BALANCE", function () {
     //   it("Should ", async function () {
@@ -278,5 +277,24 @@ describe("vEVM", function () {
     //     print_evm_state(result);
     //   });
     // });
+
+    describe("Arbitrary", function () {
+      it("Execution", async function () {
+        const { evm } = await loadFixture(deployFixture);
+		//"0x6033600202595260206000f3"
+        let result = await evm.execute("0x6033600202595260206000f3");
+        print_evm_state(result);
+      });
+    });
+
+
+		// describe("MLOAD DEBUG", function () {
+		//   it("Should", async function () {
+		// 	const { evm } = await loadFixture(deployFixture);
+		// 	// let result = await evm.execute("0x6701020304050607085952");
+		// 	let result = await evm.execute("0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600052600151");
+		// 	print_evm_state(result);
+		//   });
+		// });
   });
 });
