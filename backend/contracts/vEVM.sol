@@ -18,6 +18,7 @@ contract vEVM {
         uint256 msize;
         bytes32[] storageKey;
         bytes32[] storageData;
+        bytes[] logs;
         bytes output;
         bool running;
         bool reverting;
@@ -105,6 +106,8 @@ contract vEVM {
                 CODESIZE(evm);
             } else if (opcode == 0x3A) {
                 GASPRICE(evm);
+            } else if (opcode == 0x3B) {
+                EXTCODESIZE(evm);
             } else if (opcode == 0x40) {
                 BLOCKHASH(evm);
             } else if (opcode == 0x41) {
@@ -154,10 +157,16 @@ contract vEVM {
                 // SWAPX
                 uint256 distance = uint8(opcode) - 0x8F;
                 SWAP(evm, distance);
+            } else if ((opcode >= 0xA0) && (opcode <= 0xA4)) {
+                // LOGX
+                uint256 topics = uint8(opcode) - 0xA0;
+                LOG(evm, topics);
             } else if (opcode == 0xF3) {
                 RETURN(evm);
             } else if (opcode == 0xFD) {
                 REVERT(evm);
+            } else if (opcode == 0xFF) {
+                SELFDESTRUCT(evm);
             }
 
             if (evm.reverting) {}
@@ -246,6 +255,21 @@ contract vEVM {
     {
         bytes memory newbuf = new bytes(buf.length + (slots * 32));
         for (uint256 i = 0; i < buf.length; i++) {
+            newbuf[i] = buf[i];
+        }
+        return newbuf;
+    }
+
+    function expand_logs(bytes[] memory buf, uint256 slots)
+        internal
+        pure
+        returns (bytes[] memory)
+    {
+        // console.log("expand_logs: buf.length: %s, slots: %s", buf.length, slots);
+        bytes[] memory newbuf = new bytes[](buf.length + slots);
+        // console.log("expand_logs: newbuf.length: %s, slots: %s", newbuf.length, slots);
+        for (uint256 i = 0; i < buf.length; i++) {
+            // console.log("expand_logs: i: %s", i);
             newbuf[i] = buf[i];
         }
         return newbuf;
@@ -671,7 +695,7 @@ contract vEVM {
                 (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
             );
 
-			evm.msize = evm.mem.length;
+            evm.msize = evm.mem.length;
         }
 
         // read value
@@ -761,6 +785,22 @@ contract vEVM {
     }
 
     // inst_size[0x3B] = 1;	// EXTCODESIZE	0x3B	Requires 1 stack value, 0 imm values. Use actual size of code?
+    function EXTCODESIZE(vEVMState memory evm) internal view {
+        if (stack_underflow(evm, 1)) {
+            return;
+        }
+
+        address _addr = address(
+            uint160(uint256(evm.stack[evm.stack.length - 1]))
+        );
+        uint256 size;
+        assembly {
+            size := extcodesize(_addr)
+        }
+
+        evm.stack[evm.stack.length - 1] = bytes32(size);
+    }
+
     // inst_size[0x3C] = 1;	// EXTCODECOPY	0x3C	Requires 4 stack values, 0 imm values. Use actual code?
     // inst_size[0x3D] = 1;	// RETURNDATASIZE	0x3D	Requires 0 stack value, 0 imm values. Use actual size of return data?
     // inst_size[0x3E] = 1;	// RETURNDATACOPY	0x3E	Requires 3 stack values, 0 imm values. Use actual return data?
@@ -1232,7 +1272,74 @@ contract vEVM {
     // inst_size[0x9E] = 1;	// SWAP15		0x9E	Requires 16 stack value, 0 imm values.
     // inst_size[0x9F] = 1;	// SWAP16		0x9F	Requires 17 stack value, 0 imm values.
 
-    // // logs don't have an influence on the evm
+    // logs don't have an influence on the evm.
+    // however, they have their own data space we need to manage.
+    // specifically, logs go in the receipt root, which is a merkle tree
+    // i'm... not doing that for this.  we're going witha delimited memory buffer.
+    // every call is an atomic transaction, so for the purposes of vEVM,
+
+    // address
+    // topics, the firstof  which may be the has of the function signature
+    // irrelevant; that's solidity level stuff. here's it's just another bytes32 topic
+    // data
+
+    // Generalized LOG instruction
+    function LOG(vEVMState memory evm, uint256 num_topics) internal view {
+        if (stack_underflow(evm, 2 + num_topics)) {
+            // console.log("LOG stack_underflow");
+            return;
+        }
+
+        bytes32 addr = bytes32(uint256(uint160(address(this))));
+        // console.log("LOG addr:");
+        // console.logBytes32(addr);
+
+        // console.log("LOG topics:");
+        bytes32[] memory topics = new bytes32[](num_topics);
+        for (uint256 i = 0; i < num_topics; i++) {
+            topics[i] = evm.stack[evm.stack.length - 3 - i];
+            // console.logBytes32(topics[i]);
+        }
+
+        // data start and size
+        uint256 start = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
+        uint256 size = stack_read_as_uint256(evm.stack[evm.stack.length - 2]);
+
+        // console.log("LOG start:", start);
+        // console.log("LOG size:", size);
+
+        bytes memory log_data = new bytes(size);
+        log_data = memory_read_bytes(evm.mem, start, size);
+
+        // console.log("LOG log_data:");
+        // console.logBytes(log_data);
+
+        // console.log("LOG evm.logs.length:", evm.logs.length);
+        evm.logs = expand_logs(evm.logs, 1);
+        // console.log("LOG evm.logs.length:", evm.logs.length);
+
+        // console.log("LOG evm.logs:");
+        // for(uint256 i = 0; i < evm.logs.length; i++)
+        // {
+        // 	console.logBytes(evm.logs[i]);
+        // }
+
+        uint256 log_size = 32 + 32 * num_topics + size;
+        evm.logs[evm.logs.length - 1] = new bytes(log_size);
+        evm.logs[evm.logs.length - 1] = abi.encodePacked(
+            addr,
+            topics,
+            log_data
+        );
+        // console.log("LOG evm.logs:");
+        // for(uint256 i = 0; i < evm.logs.length; i++)
+        // {
+        // 	console.logBytes(evm.logs[i]);
+        // }
+
+        evm.stack = reduce_stack(evm.stack, 2 + num_topics);
+    }
+
     // inst_size[0xA0] = 1;	// LOG0			0xA0	Requires 2 stack value, 0 imm values.
     // inst_size[0xA1] = 1;	// LOG1			0xA1	Requires 3 stack value, 0 imm values.
     // inst_size[0xA2] = 1;	// LOG2			0xA2	Requires 4 stack value, 0 imm values.
@@ -1241,6 +1348,24 @@ contract vEVM {
 
     // // subcontext related instructions
     // inst_size[0xF0] = 1;	// CREATE		0xF0	Requires 3 stack value, 0 imm values.
+	// function CREATE(vEVMState memory evm) internal pure {
+    //     if (stack_underflow(evm, 3)) {
+    //         return;
+    //     }
+
+	// 	uint256 value = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
+    //     uint256 start = stack_read_as_uint256(evm.stack[evm.stack.length - 2]);
+    //     uint256 size = stack_read_as_uint256(evm.stack[evm.stack.length - 3]);
+
+	// 	// do the memory expansion 
+
+	// 	// get address, nonce, RPL encode
+
+	// 	// ok, not doing that tonight.
+    //     evm.output = memory_read_bytes(evm.mem, start, size);
+    //     evm.stack = reduce_stack(evm.stack, 3);
+    //     evm.running = false;
+    // }
     // inst_size[0xF1] = 1;	// CALL			0xF1	Requires 7 stack value, 0 imm values.
     // inst_size[0xF2] = 1;	// CALLCODE		0xF2	Requires 7 stack value, 0 imm values.
     // inst_size[0xF3] = 1;	// RETURN		0xF3	Requires 2 stack value, 0 imm values.
@@ -1276,6 +1401,15 @@ contract vEVM {
 
     // inst_size[0xFE] = 1; 	// INVALID		0xFE	Requires 0 stack value, 0 imm values.
     // inst_size[0xFF] = 1;	// SELFDESTRUCT	0xFF	Requires 1 stack value, 0 imm values.
+    function SELFDESTRUCT(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 1)) {
+            return;
+        }
+
+        evm.stack = reduce_stack(evm.stack, 1);
+        evm.code = new bytes(0);
+        evm.running = false;
+    }
 
     constructor() {}
 

@@ -9,6 +9,7 @@ const print_evm_state = (state) => {
   console.log("   mem:", chunkSubstr(state.mem, 64));
   console.log("  skey:", state.storageKey);
   console.log(" sdata:", state.storageData);
+  console.log("  logs:", state.logs);
   //   if (state.storageKey.length > 0) {
   //     console.log(" store:");
   //     for (let i = 0; i < state.storageKey.length; i++) {
@@ -46,13 +47,13 @@ describe("vEVM", function () {
   }
 
   describe("execute", function () {
-//     describe("PUSH8", function () {
-//       it("Should push a byte8 to the stack", async function () {
-//         const { evm } = await loadFixture(deployFixture);
-//         let result = await evm.execute("0x670102030405060708");
-//         print_evm_state(result);
-//       });
-//     });
+    //     describe("PUSH8", function () {
+    //       it("Should push a byte8 to the stack", async function () {
+    //         const { evm } = await loadFixture(deployFixture);
+    //         let result = await evm.execute("0x670102030405060708");
+    //         print_evm_state(result);
+    //       });
+    //     });
 
     // describe("PUSH1", function () {
     //   it("Should push a byte1 to the stack", async function () {
@@ -278,23 +279,47 @@ describe("vEVM", function () {
     //   });
     // });
 
-    describe("Arbitrary", function () {
-      it("Execution", async function () {
-        const { evm } = await loadFixture(deployFixture);
-		//"0x6033600202595260206000f3"
-        let result = await evm.execute("0x6033600202595260206000f3");
-        print_evm_state(result);
-      });
-    });
+    // describe("Arbitrary", function () {
+    //   it("Execution", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    // 	//"0x6033600202595260206000f3"
+    //     let result = await evm.execute("0x60006000A07F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F60206000527FA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5C3C3C3C3C3C3C3C3C3C3C3C3C3C3C3C360206000A1");
+    //     print_evm_state(result);
+    //   });
+    // });
+
+    // describe("SELFDESTRUCT", function () {
+    //   it("Should ", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x600160026003600052FF");
+    //     print_evm_state(result);
+    //   });
+    // });
+
+    // describe("CALLER", function () {
+    //   it("Should ", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x33");
+    //     print_evm_state(result);
+    //   });
+    // });
 
 
-		// describe("MLOAD DEBUG", function () {
-		//   it("Should", async function () {
-		// 	const { evm } = await loadFixture(deployFixture);
-		// 	// let result = await evm.execute("0x6701020304050607085952");
-		// 	let result = await evm.execute("0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600052600151");
-		// 	print_evm_state(result);
-		//   });
-		// });
+    // describe("CREATE", function () {
+	// 	it("Should ", async function () {
+	// 	  const { evm } = await loadFixture(deployFixture);
+	// 	  let result = await evm.execute("0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600052602060006001");
+	// 	  print_evm_state(result);
+	// 	});
+	//   });
+
+    // describe("MLOAD DEBUG", function () {
+    //   it("Should", async function () {
+    // 	const { evm } = await loadFixture(deployFixture);
+    // 	// let result = await evm.execute("0x6701020304050607085952");
+    // 	let result = await evm.execute("0x7F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F600052600151");
+    // 	print_evm_state(result);
+    //   });
+    // });
   });
 });

@@ -79,7 +79,7 @@ struct vEVMState {
 | CODESIZE       | 0x38   | Done   |
 | CODECOPY       | 0x39   |        |
 | GASPRICE       | 0x3a   | Done   |
-| EXTCODESIZE    | 0x3b   |        |
+| EXTCODESIZE    | 0x3b   | Done   |
 | EXTCODECOPY    | 0x3c   |        |
 | RETURNDATASIZE | 0x3d   |        |
 | RETURNDATACOPY | 0x3e   |        |
@@ -202,11 +202,11 @@ struct vEVMState {
 
 | Mnemonic | OpCode | Status |
 | -------- | ------ | ------ |
-| LOG0     | 0xa0   |
-| LOG1     | 0xa1   |        |
-| LOG2     | 0xa2   |        |
-| LOG3     | 0xa3   |        |
-| LOG4     | 0xa4   |        |
+| LOG0     | 0xa0   | Done   |
+| LOG1     | 0xa1   | Done   |
+| LOG2     | 0xa2   | Done   |
+| LOG3     | 0xa3   | Done   |
+| LOG4     | 0xa4   | Done   |
 
 ### 0xb0 range
 
@@ -228,4 +228,4 @@ struct vEVMState {
 | STATICCALL   | 0xfa   |        |
 | REVERT       | 0xfd   |        |
 | INVALID      | 0xfe   |        |
-| SELFDESTRUCT | 0xff   |        |
+| SELFDESTRUCT | 0xff   | Done   |
