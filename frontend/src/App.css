@@ -1,20 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Reenie+Beanie&family=Roboto+Mono&family=Share+Tech+Mono&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Reenie+Beanie&family=Roboto+Mono&family=Share+Tech+Mono&display=swap");
 
 html {
   height: 100vh;
   background: black;
-  background: radial-gradient(circle at 24.1% 68.8%, rgb(50, 50, 50) 0%, rgb(0, 0, 0) 99.4%);
+  background: radial-gradient(
+    circle at 24.1% 68.8%,
+    rgb(50, 50, 50) 0%,
+    rgb(0, 0, 0) 99.4%
+  );
   background-attachment: fixed;
-  font-family: 'Roboto Mono', monospace;
- }
- 
- body {
+  font-family: "Roboto Mono", monospace;
+}
+
+body {
   padding: 20px;
   margin: 0 auto;
   color: #fff;
- }
- 
- .header {
+}
+
+.header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -35,8 +39,6 @@ html {
   filter: drop-shadow(0px 0px 12px rgba(49, 164, 160, 0.5));
 }
 
-
-
 .header-center {
   flex: 1;
   text-align: center;
@@ -51,20 +53,16 @@ h1 {
   margin-bottom: -10px;
   font-size: 2.5rem;
   color: #fff;
-  text-shadow:
-    0 0 7px #fff,
-    0 0 10px #fff,
-    0 0 21px #0ff,
-    0 0 42px #0ff,
+  text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #0ff, 0 0 42px #0ff,
     0 0 82px #0ff;
 }
 
-h2{
+h2 {
   margin: 5px 0;
 }
 
-h5{
-  font-family: 'Reenie Beanie', cursive;
+h5 {
+  font-family: "Reenie Beanie", cursive;
   font-size: 2rem;
   margin: 0;
   margin-left: 5rem;
@@ -72,15 +70,15 @@ h5{
 }
 
 .main {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-direction: column;
-	text-align: center;
-	margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  margin-top: 16px;
 }
 
-.textarea-terminal{
+.textarea-terminal {
   outline: none;
   background: #111;
   border: 1px solid #444;
@@ -90,12 +88,41 @@ h5{
   width: 536px;
   max-width: 90vw;
   height: 6rem;
-  font-family: 'Roboto Mono', monospace;
+  font-family: "Roboto Mono", monospace;
 }
 
-.textarea-terminal::placeholder{
+.textarea-terminal::placeholder {
   color: #728ba0;
 }
+
+.tx-params {
+  margin: 16px;
+  width: 536px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+}
+
+.tx-params-input-left {
+	outline: none;
+	background: #111;
+	border: 1px solid #444;
+	border-radius: 0 0 0 5px;
+	font-family: "Roboto Mono", monospace;
+	height: 1.3rem;
+	width: 250px;
+  }
+
+  .tx-params-input-right {
+	outline: none;
+	background: #111;
+	border: 1px solid #444;
+	border-radius: 0 0 5px 0;
+	font-family: "Roboto Mono", monospace;
+	height: 1.3rem;
+	width: 250px;
+  }
 
 .button-execute {
   cursor: pointer;
@@ -110,21 +137,16 @@ h5{
   text-transform: uppercase;
   background: transparent;
   color: #fff;
-  box-shadow: 
-    0 0 .2rem #fff,
-    0 0 .2rem #fff,
-    0 0 2rem #ff6633,
-    0 0 0.8rem #ff6633,
-    0 0 2.8rem #ff6633,
-    inset 0 0 1.3rem #ff6633;
-    font-family: 'Share Tech Mono', monospace;
+  box-shadow: 0 0 0.2rem #fff, 0 0 0.2rem #fff, 0 0 2rem #ff6633,
+    0 0 0.8rem #ff6633, 0 0 2.8rem #ff6633, inset 0 0 1.3rem #ff6633;
+  font-family: "Share Tech Mono", monospace;
 }
 
-.results{
-  margin-top:50px;
+.results {
+  margin-top: 50px;
 }
 
-.container-terminal{
+.container-terminal {
   background: #111;
   border: 1px solid #444;
   border-radius: 10px 10px 0 0;
@@ -135,26 +157,26 @@ h5{
   overflow-wrap: break-word;
 }
 
-.container-terminal h3{
+.container-terminal h3 {
   font-size: 13px;
   margin-bottom: 0;
 }
 
-.container-terminal p{
+.container-terminal p {
   font-size: 13px;
   margin-top: 0;
 }
 
-.container-terminal ul{
+.container-terminal ul {
   padding: 0;
   margin-bottom: 0;
   margin-top: 0;
   list-style-type: none;
 }
 
-.container-terminal li{
-	font-size: 13px;
-	padding: 0;
-	margin-bottom: 0;
-	margin-top: 0;
-  }
+.container-terminal li {
+  font-size: 13px;
+  padding: 0;
+  margin-bottom: 0;
+  margin-top: 0;
+}
