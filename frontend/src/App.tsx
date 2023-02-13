@@ -49,16 +49,25 @@ export function App() {
       </header>
       <div className="main">
         <h2>bytecode</h2>
-        <textarea className="textarea-terminal"
+        <textarea
+          className="textarea-terminal"
           value={text}
           placeholder="0x60016002600360040160005260206000F3"
           onChange={(e) => setText(e.target.value)}
         />
-		<div className="tx-params">
-		<input className="tx-params-input-left" type="text" placeholder="calldata" />
-		<input className="tx-params-input-right" type="text" placeholder="value" />
-		</div>
-		
+        <div className="tx-params">
+          <input
+            className="tx-params-input-left"
+            type="text"
+            placeholder="calldata"
+          />
+          <input
+            className="tx-params-input-right"
+            type="text"
+            placeholder="value"
+          />
+        </div>
+
         <button className="button-execute" onClick={(e) => setBytecode(text)}>
           Execute
         </button>

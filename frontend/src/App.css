@@ -105,24 +105,24 @@ h5 {
 }
 
 .tx-params-input-left {
-	outline: none;
-	background: #111;
-	border: 1px solid #444;
-	border-radius: 0 0 0 5px;
-	font-family: "Roboto Mono", monospace;
-	height: 1.3rem;
-	width: 250px;
-  }
+  outline: none;
+  background: #111;
+  border: 1px solid #444;
+  border-radius: 0 0 0 5px;
+  font-family: "Roboto Mono", monospace;
+  height: 1.3rem;
+  width: 250px;
+}
 
-  .tx-params-input-right {
-	outline: none;
-	background: #111;
-	border: 1px solid #444;
-	border-radius: 0 0 5px 0;
-	font-family: "Roboto Mono", monospace;
-	height: 1.3rem;
-	width: 250px;
-  }
+.tx-params-input-right {
+  outline: none;
+  background: #111;
+  border: 1px solid #444;
+  border-radius: 0 0 5px 0;
+  font-family: "Roboto Mono", monospace;
+  height: 1.3rem;
+  width: 250px;
+}
 
 .button-execute {
   cursor: pointer;
