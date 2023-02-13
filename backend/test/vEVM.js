@@ -296,6 +296,23 @@ describe("vEVM", function () {
     //   });
     // });
 
+	// describe("SIGNEXTEND", function () {
+    //   it("Should ", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    //     let result = await evm.execute("0x60FF60000B607F60000B");
+    //     print_evm_state(result);
+    //   });
+    // });
+
+	// describe("SAR", function () {
+    //   it("Should ", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+	// 	// 0x600260011D7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF060041D
+    //     let result = await evm.execute("0x600260011D7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF060041D");
+    //     print_evm_state(result);
+    //   });
+    // });
+
     // describe("CALLER", function () {
     //   it("Should ", async function () {
     //     const { evm } = await loadFixture(deployFixture);

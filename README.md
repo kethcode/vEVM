@@ -2,7 +2,7 @@
 
 ## example
 
-https://goerli-optimism.etherscan.io/address/0x745470FD2569845798fD48d010cDAE0e77229af9
+https://goerli-optimism.etherscan.io/address/0xbf42398B6c3DF1F01b2848E6B16B8bcC62029D84
 
 ```
 await evm.execute("0x60016002600360040160005260206000F3");
@@ -37,7 +37,7 @@ struct vEVMState {
 | ADDMOD     | 0x8    | Done   |
 | MULMOD     | 0x9    | Done   |
 | EXP        | 0xa    | Done   |
-| SIGNEXTEND | 0xb    |        |
+| SIGNEXTEND | 0xb    | Done   |
 
 ### 0x10 range - comparison ops
 
@@ -56,7 +56,7 @@ struct vEVMState {
 | BYTE     | 0x1a   | Done   |
 | SHL      | 0x1b   | Done   |
 | SHR      | 0x1c   | Done   |
-| SAR      | 0x1d   |        |
+| SAR      | 0x1d   | Done   |
 
 ### 0x20 range - crypto
 

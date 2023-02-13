@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from "react";
 
 import { ethers } from "ethers";
 
-const evm_address = "0x745470FD2569845798fD48d010cDAE0e77229af9";
+const evm_address = "0xbf42398B6c3DF1F01b2848E6B16B8bcC62029D84";
 
 import evm_abi from "../../../abi/vEVM.json";
 

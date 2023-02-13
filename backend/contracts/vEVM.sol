@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: mine
 pragma solidity ^0.8.17;
 
-//import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 /**
  * @title  Virtual EVM
@@ -25,7 +25,6 @@ contract vEVM {
     }
 
     uint256 constant STACK_MAX_SIZE = 1024;
-    uint256 constant MEM_MAX_SIZE = 1024; // i dont need to limit this
 
     function execute(bytes calldata bytecode)
         external
@@ -66,8 +65,8 @@ contract vEVM {
                 MULMOD(evm);
             } else if (opcode == 0x0A) {
                 EXP(evm);
-                // } else if (opcode == 0x0B) {
-                // 	SIGNEXTEND(evm);
+            } else if (opcode == 0x0B) {
+                SIGNEXTEND(evm);
             } else if (opcode == 0x10) {
                 LT(evm);
             } else if (opcode == 0x11) {
@@ -90,6 +89,12 @@ contract vEVM {
                 NOT(evm);
             } else if (opcode == 0x1A) {
                 BYTE(evm);
+            } else if (opcode == 0x1B) {
+                SHL(evm);
+            } else if (opcode == 0x1C) {
+                SHR(evm);
+            } else if (opcode == 0x1D) {
+                SAR(evm);
             } else if (opcode == 0x20) {
                 SHA3(evm);
             } else if (opcode == 0x30) {
@@ -491,6 +496,22 @@ contract vEVM {
     }
 
     // inst_size[0x0B] = 1;	// SIGNEXTEND	0x0B	Requires 2 stack values, 0 imm values.
+    function SIGNEXTEND(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+        uint256 byte_num = uint256(evm.stack[evm.stack.length - 1]);
+        uint256 value = stack_read_as_uint256(evm.stack[evm.stack.length - 2]);
+
+        uint256 result;
+        assembly {
+            result := signextend(byte_num, value)
+        }
+
+        evm.stack[evm.stack.length - 2] = bytes32(result);
+        evm.stack = reduce_stack(evm.stack, 1);
+    }
+
     // inst_size[0x10] = 1;	// LT			0x10	Requires 2 stack values, 0 imm values.
     function LT(vEVMState memory evm) internal pure {
         if (stack_underflow(evm, 2)) {
@@ -669,6 +690,23 @@ contract vEVM {
     }
 
     // inst_size[0x1D] = 1;	// SAR			0x1D	Requires 2 stack values, 0 imm values.
+    function SAR(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 2)) {
+            return;
+        }
+
+        uint256 shift = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
+        int256 value = int256(stack_read_as_uint256(evm.stack[evm.stack.length - 2]));
+
+        bytes32 result;
+        assembly {
+            result := sar(shift, value)
+        }
+
+        evm.stack[evm.stack.length - 2] = result;
+        evm.stack = reduce_stack(evm.stack, 1);
+    }
+
     // inst_size[0x20] = 1;	// SHA3			0x20	Requires 2 stack values, 0 imm values.
     function SHA3(vEVMState memory evm) internal pure {
         if (stack_underflow(evm, 2)) {
@@ -1348,20 +1386,20 @@ contract vEVM {
 
     // // subcontext related instructions
     // inst_size[0xF0] = 1;	// CREATE		0xF0	Requires 3 stack value, 0 imm values.
-	// function CREATE(vEVMState memory evm) internal pure {
+    // function CREATE(vEVMState memory evm) internal pure {
     //     if (stack_underflow(evm, 3)) {
     //         return;
     //     }
 
-	// 	uint256 value = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
+    // 	uint256 value = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
     //     uint256 start = stack_read_as_uint256(evm.stack[evm.stack.length - 2]);
     //     uint256 size = stack_read_as_uint256(evm.stack[evm.stack.length - 3]);
 
-	// 	// do the memory expansion 
+    // 	// do the memory expansion
 
-	// 	// get address, nonce, RPL encode
+    // 	// get address, nonce, RPL encode
 
-	// 	// ok, not doing that tonight.
+    // 	// ok, not doing that tonight.
     //     evm.output = memory_read_bytes(evm.mem, start, size);
     //     evm.stack = reduce_stack(evm.stack, 3);
     //     evm.running = false;
