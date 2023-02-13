@@ -11,16 +11,33 @@ cache
 
 package-lock.json
 
-
 backend/node_modules
 backend/.env
 backend/coverage
 backend/coverage.json
 backend/typechain
 backend/typechain-types
-
 backend/artifacts/build-info
 backend/artifacts/hardhat
 backend/cache
-
 backend/package-lock.json
+
+frontend/node_modules
+frontend/.env
+frontend/package-lock.json
+frontend/.pnp
+frontend/.pnp.js
+frontend/coverage
+frontend/dist
+frontend/dist-ssr
+frontend/build
+frontend/*.pem
+frontend/*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnpm-debug.log*
+frontend/.env\*.local
+frontend/.vercel
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
