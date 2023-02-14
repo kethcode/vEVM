@@ -3,6 +3,8 @@ const { expect } = require("chai");
 
 const print_evm_state = (state) => {
   console.log("  code:", state.code);
+  console.log("  data:", state.data);
+  console.log(" value:", state.value);
   console.log("    pc:", parseInt(state.pc));
   console.log("output:", state.output);
   console.log(" stack:", state.stack);
@@ -279,14 +281,14 @@ describe("vEVM", function () {
     //   });
     // });
 
-    // describe("Arbitrary", function () {
-    //   it("Execution", async function () {
-    //     const { evm } = await loadFixture(deployFixture);
-    // 	//"0x6033600202595260206000f3"
-    //     let result = await evm.execute("0x60006000A07F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F60206000527FA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5C3C3C3C3C3C3C3C3C3C3C3C3C3C3C3C360206000A1");
-    //     print_evm_state(result);
-    //   });
-    // });
+    describe("Arbitrary", function () {
+      it("Execution", async function () {
+        const { evm } = await loadFixture(deployFixture);
+    	//"0x6033600202595260206000f3"
+        let result = await evm.execute("0x60006000A07F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F60206000527FA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5C3C3C3C3C3C3C3C3C3C3C3C3C3C3C3C360206000A1", "0x00", 0);
+        print_evm_state(result);
+      });
+    });
 
     // describe("SELFDESTRUCT", function () {
     //   it("Should ", async function () {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: mine
 pragma solidity ^0.8.17;
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 
 /**
  * @title  Virtual EVM
@@ -12,6 +12,8 @@ import "hardhat/console.sol";
 contract vEVM {
     struct vEVMState {
         bytes code;
+        bytes data;
+        uint256 value;
         uint256 pc;
         bytes32[] stack;
         bytes mem;
@@ -26,14 +28,16 @@ contract vEVM {
 
     uint256 constant STACK_MAX_SIZE = 1024;
 
-    function execute(bytes calldata bytecode)
-        external
-        view
-        returns (vEVMState memory)
-    {
+    function execute(
+        bytes calldata bytecode,
+        bytes calldata data,
+        uint256 value
+    ) external view returns (vEVMState memory) {
         vEVMState memory evm;
 
         evm.code = bytecode;
+        evm.data = data;
+        evm.value = value;
 
         evm.pc = 0;
         evm.msize = 0;
@@ -696,7 +700,9 @@ contract vEVM {
         }
 
         uint256 shift = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
-        int256 value = int256(stack_read_as_uint256(evm.stack[evm.stack.length - 2]));
+        int256 value = int256(
+            stack_read_as_uint256(evm.stack[evm.stack.length - 2])
+        );
 
         bytes32 result;
         assembly {
@@ -783,6 +789,7 @@ contract vEVM {
     }
 
     // inst_size[0x33] = 1;	// CALLER		0x33	Use actual msg.sender?
+	// i assumed it would be the person starting the emulation, but maybe this needs to be configurable as well.
     function CALLER(vEVMState memory evm) internal view {
         if (stack_overflow(evm, 1)) {
             return;
@@ -791,18 +798,72 @@ contract vEVM {
         evm.stack[evm.stack.length - 1] = bytes32(uint256(uint160(msg.sender)));
     }
 
-    // inst_size[0x34] = 1;	// CALLVALUE	0x34	Use actual msg.value?
-    function CALLVALUE(vEVMState memory evm) internal view {
+    // inst_size[0x34] = 1;	// CALLVALUE	0x34	Use actual msg.value? no, use value passed externally
+    function CALLVALUE(vEVMState memory evm) internal pure {
         if (stack_overflow(evm, 1)) {
             return;
         }
+
         evm.stack = expand_stack(evm.stack, 1);
-        evm.stack[evm.stack.length - 1] = bytes32(msg.value);
+        evm.stack[evm.stack.length - 1] = bytes32(evm.value);
     }
 
-    // inst_size[0x35] = 1;	// CALLDATALOAD	0x35	Requires 1 stack value, 0 imm values. Use actual msg.data?
-    // inst_size[0x36] = 1;	// CALLDATASIZE	0x36	Requires 0 stack value, 0 imm values. Use actual msg.data?
-    // inst_size[0x37] = 1;	// CALLDATACOPY	0x37	Requires 3 stack values, 0 imm values. Use actual msg.data?
+    // inst_size[0x35] = 1;	// CALLDATALOAD	0x35	Requires 1 stack value, 0 imm values. Use actual msg.data? no, use value passed externally
+    function CALLDATALOAD(vEVMState memory evm) internal pure {
+        if (stack_underflow(evm, 1)) {
+            return;
+        }
+
+		// do I revert if I read past the end of calldata, or do I append zeroes?
+		// for now, i'm going to append zeroes
+
+        // get the calldata position to read from
+        uint256 start_position = stack_read_as_uint256(
+            evm.stack[evm.stack.length - 1]
+        );
+
+        // how much data do we expect is present?
+        uint256 data_needed = 0;
+
+        if ((start_position + uint256(0x20)) >= evm.data.length) {
+            data_needed = (start_position + uint256(0x20)) - evm.data.length;
+        }
+
+        // expand data if needed
+        if (data_needed > 0) {
+            // how many data slots do we need to expand by?
+            evm.data = expand_mem(
+                evm.data,
+                (data_needed / 32) + (data_needed % 32 == 0 ? 0 : 1)
+            );
+        }
+
+        // read value
+        evm.stack[evm.stack.length - 1] = memory_read_bytes32(
+            evm.data,
+            start_position
+        );
+    }
+
+    // inst_size[0x36] = 1;	// CALLDATASIZE	0x36	Requires 0 stack value, 0 imm values. Use actual msg.data? no, use value passed externally
+    function CALLDATASIZE(vEVMState memory evm) internal view {
+        if (stack_overflow(evm, 1)) {
+            return;
+        }
+
+        evm.stack = expand_stack(evm.stack, 1);
+        evm.stack[evm.stack.length - 1] = bytes32(evm.data.length);
+    }
+
+    // inst_size[0x37] = 1;	// CALLDATACOPY	0x37	Requires 3 stack values, 0 imm values. Use actual msg.data? no, use value passed externally
+    function CALLDATACOPY(vEVMState memory evm) internal view {
+        // if (stack_overflow(evm, 1)) {
+        //     return;
+        // }
+        // evm.stack = expand_stack(evm.stack, 1);
+        // evm.stack[evm.stack.length - 1] = bytes32(evm.data.length);
+    }
+
     // inst_size[0x38] = 1;	// CODESIZE		0x38	Requires 0 stack value, 0 imm values. Use original size of input?
     function CODESIZE(vEVMState memory evm) internal pure {
         if (stack_overflow(evm, 1)) {
