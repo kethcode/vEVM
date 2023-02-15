@@ -8,7 +8,7 @@
   --terminal-text-color: #fff;
   --terminal-placeholder-color: #2d363d;
   --terminal-padding: 10px;
-  --terminal-width: 536px;
+  --terminal-width: 540px;
   --terminal-max-width: 90vw;
   --border-radius:10px;
 }
@@ -206,8 +206,27 @@ h5 {
 
 footer{
   text-align: center;
+  margin-top: 80px;
 }
 
 footer a {
-  padding: 2vw;
+  display: inline-block;
+  padding: 8px 16px;
+  opacity: .3;
+  transition: all ease .2s;
+}
+
+footer a:hover {
+  animation: flicker 2s forwards;
+}
+
+@keyframes flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    filter: drop-shadow(0px 0px 12px rgb(21, 227, 221));
+    opacity: 1;
+  }
+  15%, 20%, 24% {       
+    filter: none;
+    opacity: .3;
+  }
 }
