@@ -73,6 +73,12 @@ export function App() {
         </button>
         {bytecode && <EVMResults bytecode={bytecode} />}
       </div>
+      <footer>
+        <a href="https://www.evm.codes/?fork=merge" target={"_blank"}><img height="25" src="logo-evmcodes-light.png" alt="evm codes"></img></a>
+        <a href="https://ethereum.github.io/execution-specs/autoapi/ethereum/paris/vm/index.html" target={"_blank"}><img height="25" src="logo-specification-light.png" alt="Ethereum Specification"></img></a>
+        <a href="https://goerli-optimism.etherscan.io/address/0xbf42398B6c3DF1F01b2848E6B16B8bcC62029D84#code" target={"_blank"}><img height="25" src="logo-etherscan-light.svg" alt="Etherscan"></img></a>
+        <a href="https://github.com/kethcode/vEVM" target={"_blank"}><img height="25" src="logo-github-light.png" alt="GitHub"></img></a>
+      </footer>
     </>
   );
 }
