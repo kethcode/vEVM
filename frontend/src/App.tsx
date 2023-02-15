@@ -65,7 +65,7 @@ export function App() {
           placeholder="0x60016002600360040160005260206000F3"
           onChange={(e) => setTextCode(e.target.value)}
         />
-        <div className="tx-params">
+        {/* <div className="tx-params">
           <input
             className="tx-params-input-left"
             value={textData}
@@ -80,7 +80,7 @@ export function App() {
             placeholder="value"
             onChange={(e) => setTextValue(e.target.value)}
           />
-        </div>
+        </div> */}
 
         <button className="button-execute" onClick={(e) => sendParamters()}>
           Execute
