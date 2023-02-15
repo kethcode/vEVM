@@ -1,6 +1,7 @@
 {
   "name": "frontend",
-  "version": "0.3.1",
+  "version": "0.3.2",
+  "author": "kethic, aleta",
   "private": true,
   "scripts": {
     "dev": "vite",
