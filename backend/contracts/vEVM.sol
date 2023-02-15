@@ -111,6 +111,10 @@ contract vEVM {
                 CALLER(evm);
             } else if (opcode == 0x34) {
                 CALLVALUE(evm);
+            } else if (opcode == 0x35) {
+                CALLDATALOAD(evm);
+            } else if (opcode == 0x36) {
+                CALLDATASIZE(evm);
             } else if (opcode == 0x38) {
                 CODESIZE(evm);
             } else if (opcode == 0x3A) {
@@ -257,12 +261,24 @@ contract vEVM {
         return (newkeys, newdata);
     }
 
-    function expand_mem(bytes memory buf, uint256 slots)
+    function expand_mem_slots(bytes memory buf, uint256 slots)
         internal
         pure
         returns (bytes memory)
     {
         bytes memory newbuf = new bytes(buf.length + (slots * 32));
+        for (uint256 i = 0; i < buf.length; i++) {
+            newbuf[i] = buf[i];
+        }
+        return newbuf;
+    }
+
+	function expand_mem_bytes(bytes memory buf, uint256 bytes_needed)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        bytes memory newbuf = new bytes(buf.length + bytes_needed);
         for (uint256 i = 0; i < buf.length; i++) {
             newbuf[i] = buf[i];
         }
@@ -734,7 +750,7 @@ contract vEVM {
         // expand memory if needed
         if (memory_needed > 0) {
             // how many memory slots do we need to expand by?
-            evm.mem = expand_mem(
+            evm.mem = expand_mem_slots(
                 evm.mem,
                 (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
             );
@@ -789,7 +805,7 @@ contract vEVM {
     }
 
     // inst_size[0x33] = 1;	// CALLER		0x33	Use actual msg.sender?
-	// i assumed it would be the person starting the emulation, but maybe this needs to be configurable as well.
+    // i assumed it would be the person starting the emulation, but maybe this needs to be configurable as well.
     function CALLER(vEVMState memory evm) internal view {
         if (stack_overflow(evm, 1)) {
             return;
@@ -814,8 +830,8 @@ contract vEVM {
             return;
         }
 
-		// do I revert if I read past the end of calldata, or do I append zeroes?
-		// for now, i'm going to append zeroes
+        // do I revert if I read past the end of calldata, or do I append zeroes?
+        // for now, i'm going to append zeroes
 
         // get the calldata position to read from
         uint256 start_position = stack_read_as_uint256(
@@ -832,9 +848,9 @@ contract vEVM {
         // expand data if needed
         if (data_needed > 0) {
             // how many data slots do we need to expand by?
-            evm.data = expand_mem(
+            evm.data = expand_mem_bytes(
                 evm.data,
-                (data_needed / 32) + (data_needed % 32 == 0 ? 0 : 1)
+                data_needed
             );
         }
 
@@ -846,11 +862,15 @@ contract vEVM {
     }
 
     // inst_size[0x36] = 1;	// CALLDATASIZE	0x36	Requires 0 stack value, 0 imm values. Use actual msg.data? no, use value passed externally
-    function CALLDATASIZE(vEVMState memory evm) internal view {
+    function CALLDATASIZE(vEVMState memory evm) internal pure {
         if (stack_overflow(evm, 1)) {
             return;
         }
 
+		// console.log("CALLDATA:");
+		// console.logBytes(evm.data);
+		// console.log("CALLDATASIZE: %s", evm.data.length);
+		
         evm.stack = expand_stack(evm.stack, 1);
         evm.stack[evm.stack.length - 1] = bytes32(evm.data.length);
     }
@@ -1006,7 +1026,7 @@ contract vEVM {
         // expand memory if needed
         if (memory_needed > 0) {
             // how many memory slots do we need to expand by?
-            evm.mem = expand_mem(
+            evm.mem = expand_mem_slots(
                 evm.mem,
                 (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
             );
@@ -1043,7 +1063,7 @@ contract vEVM {
         // expand memory if needed
         if (memory_needed > 0) {
             // how many memory slots do we need to expand by?
-            evm.mem = expand_mem(
+            evm.mem = expand_mem_slots(
                 evm.mem,
                 (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
             );
@@ -1082,7 +1102,7 @@ contract vEVM {
         // expand memory if needed
         if (memory_needed > 0) {
             // how many memory slots do we need to expand by?
-            evm.mem = expand_mem(
+            evm.mem = expand_mem_slots(
                 evm.mem,
                 (memory_needed / 32) + (memory_needed % 32 == 0 ? 0 : 1)
             );

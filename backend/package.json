@@ -1,13 +1,13 @@
 {
   "name": "vevm",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "kethic",
+  "author": "kethic, aleta",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.0.3",

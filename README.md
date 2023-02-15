@@ -2,7 +2,7 @@
 
 ## example
 
-https://goerli-optimism.etherscan.io/address/0xbf42398B6c3DF1F01b2848E6B16B8bcC62029D84
+https://goerli-optimism.etherscan.io/address/0x6400e134C9440eead92B0c94FaD3EC0fefe96059
 
 ```
 await evm.execute("0x60016002600360040160005260206000F3");
@@ -75,8 +75,8 @@ struct vEVMState {
 | ORIGIN         | 0x32   | Done   |
 | CALLER         | 0x33   | Done   |
 | CALLVALUE      | 0x34   | Done   |
-| CALLDATALOAD   | 0x35   |        |
-| CALLDATASIZE   | 0x36   |        |
+| CALLDATALOAD   | 0x35   | Done   |
+| CALLDATASIZE   | 0x36   | Done   |
 | CALLDATACOPY   | 0x37   |        |
 | CODESIZE       | 0x38   | Done   |
 | CODECOPY       | 0x39   |        |

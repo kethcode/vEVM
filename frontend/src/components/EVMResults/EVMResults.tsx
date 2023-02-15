@@ -3,12 +3,14 @@ import { useEffect, useState, useMemo } from "react";
 
 import { ethers } from "ethers";
 
-const evm_address = "0xbf42398B6c3DF1F01b2848E6B16B8bcC62029D84";
+const evm_address = "0x6400e134C9440eead92B0c94FaD3EC0fefe96059";
 
 import evm_abi from "../../../abi/vEVM.json";
 
 type vEVMState = {
   code: string;
+  data: string;
+  value: string;
   pc: string;
   stack: string[];
   mem: string;
@@ -35,21 +37,54 @@ export function EVMResults(props: any) {
   //   console.log("  skey:", state.storageKey);
   //   console.log(" sdata:", state.storageData);
 
+  const getHexSlotString = (index: number) => {
+	return (ethers.utils.hexlify(index * 32) + ":" + ethers.utils.hexlify(((index + 1) * 32) - 1));
+  }
+
   const renderResults = () => {
     if (results) {
       const res: vEVMState = results;
 
+	  const code_temp = res.code.slice(2).match(/.{1,64}/g) || [];
+	  const code_array = code_temp.map((code_slot, index) => (
+		<li key={index}>
+		  {" "}
+		  [{getHexSlotString(index)}]: {code_slot}
+		</li>
+	  ));
+
+	  const pc_string = parseInt(res.pc);
+
+	  const data_temp = res.data.slice(2).match(/.{1,64}/g) || [];
+	  const data_array = data_temp.map((data_slot, index) => (
+		<li key={index}>
+		  {" "}
+		  [{index}]: {data_slot}
+		</li>
+	  ));
+
+	  const value_string = res.value.toString();
+
+	  const output_temp = res.output.slice(2).match(/.{1,64}/g) || [];
+	  const output_array = output_temp.map((output_slot, index) => (
+		<li key={index}>
+		  {" "}
+		  [{index}]: {output_slot}
+		</li>
+	  ));
+
       const stack_array = res.stack.map((stack_slot, index) => (
         <li key={index}>
           {" "}
-          [{index}] {stack_slot.slice(2)}
+          [{index}]: {stack_slot.slice(2)}
         </li>
       ));
+
       const mem_temp = res.mem.slice(2).match(/.{1,64}/g) || [];
       const mem_array = mem_temp.map((mem_slot, index) => (
         <li key={index}>
           {" "}
-          [{index}] {mem_slot}
+          [{getHexSlotString(index)}]: {mem_slot}
         </li>
       ));
 
@@ -73,7 +108,7 @@ export function EVMResults(props: any) {
       const logs_array = logs_map.map((log, index) => (
         <li key={index}>
           {" "}
-          [{index}] {log}
+          [{index}]: {log}
         </li>
       ));
 
@@ -86,10 +121,13 @@ export function EVMResults(props: any) {
           <h2>results</h2>
           <div className="container-terminal">
             <h3>code</h3>
-            <p>{res.code}</p>
-            {/* <p>{results.pc}</p> */}
+            <ul>{code_array}</ul>
+			<br /><p><b>pc:</b> {pc_string}
+			<br /><b>value (wei):</b> {value_string}</p>
+			<h3>calldata</h3>
+			<ul>{data_array}</ul>
             <h3>output</h3>
-            <p>{res.output}</p>
+            <p>{output_array}</p>
             <h3>stack</h3>
             <ul>{stack_array}</ul>
             <h3>memory</h3>
@@ -115,14 +153,15 @@ export function EVMResults(props: any) {
         if (data.substring(0, 2) != "0x") {
           data = "0x" + data;
         }
-      } else {
-        data = "0x00";
       }
+	  else{
+		  data = "0x";
+	  }
 
-      if (props.value != null) {
+      if (props.value != "") {
         value = props.value;
       } else {
-        value = 0;
+        value = ethers.BigNumber.from(0);
       }
 
       if (props.bytecode != "") {
@@ -132,7 +171,7 @@ export function EVMResults(props: any) {
         }
 
         if (ethers.utils.isBytesLike(code)) {
-          const result = await evm.execute(code, 0, 0);
+          const result = await evm.execute(code, data, value);
           console.log(result);
           setResults(result);
         }
@@ -140,7 +179,7 @@ export function EVMResults(props: any) {
     }
   };
 
-  const result = useMemo(() => executeBytecode(), [props.bytecode]);
+  const result = useMemo(() => executeBytecode(), [props.bytecode, props.data, props.value]);
 
   return <>{renderResults()}</>;
 }

@@ -281,14 +281,14 @@ describe("vEVM", function () {
     //   });
     // });
 
-    describe("Arbitrary", function () {
-      it("Execution", async function () {
-        const { evm } = await loadFixture(deployFixture);
-    	//"0x6033600202595260206000f3"
-        let result = await evm.execute("0x60006000A07F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F60206000527FA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5C3C3C3C3C3C3C3C3C3C3C3C3C3C3C3C360206000A1", "0x00", 0);
-        print_evm_state(result);
-      });
-    });
+    // describe("Arbitrary", function () {
+    //   it("Execution", async function () {
+    //     const { evm } = await loadFixture(deployFixture);
+    // 	//"0x6033600202595260206000f3"
+    //     let result = await evm.execute("0x60006000A07F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F60206000527FA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5C3C3C3C3C3C3C3C3C3C3C3C3C3C3C3C360206000A1", "0x00", 0);
+    //     print_evm_state(result);
+    //   });
+    // });
 
     // describe("SELFDESTRUCT", function () {
     //   it("Should ", async function () {
@@ -340,5 +340,14 @@ describe("vEVM", function () {
     // 	print_evm_state(result);
     //   });
     // });
+
+	describe("CALLDATA STUFF", function () {
+		it("Execution", async function () {
+		  const { evm } = await loadFixture(deployFixture);
+		  //"0x6033600202595260206000f3"
+		  let result = await evm.execute("0x3436600135", "0x0011223344", 64);
+		  print_evm_state(result);
+		});
+	  });
   });
 });
