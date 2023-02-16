@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ofjansen/pcre2-wasm": "^1.4.0",
+    "@stephen-riley/pcre": "^0.9.0",
     "buffer": "^6.0.3",
     "connectkit": "^1.1.1",
     "ethers": "^5.7.2",
