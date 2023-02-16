@@ -125,10 +125,10 @@ export function EVMResults(props: any) {
             <ul>{code_array}</ul>
             <br />
             <p>
-              <b className="chisel-green">pc:</b>{" "}
+              <b className="chisel-green">pc</b>:{" "}
               <span className="chisel-cyan">{pc_string}</span>
               <br />
-              <b className="chisel-green">value (wei):</b>{" "}
+              <b className="chisel-green">value (wei)</b>:{" "}
               <span className="chisel-cyan">{value_string}</span>
             </p>
             <h3>calldata</h3>
