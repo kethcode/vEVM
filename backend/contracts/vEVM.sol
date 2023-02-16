@@ -10,6 +10,9 @@ pragma solidity ^0.8.17;
  */
 
 contract vEVM {
+    /*//////////////////////////////////////////////////////////////
+                            DATA STRUCTURES
+    //////////////////////////////////////////////////////////////*/
     struct vEVMState {
         bytes code;
         bytes data;
@@ -26,24 +29,47 @@ contract vEVM {
         bool reverting;
     }
 
+    /*//////////////////////////////////////////////////////////////
+                            CONSTANTS
+    //////////////////////////////////////////////////////////////*/
     uint256 constant STACK_MAX_SIZE = 1024;
 
+    /*//////////////////////////////////////////////////////////////
+                            CONSTRUCTOR
+    //////////////////////////////////////////////////////////////*/
+    constructor() {}
+
+    /*//////////////////////////////////////////////////////////////
+                            DEFAULT FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+    // these were just for testing.  disable them for production
+    // fallback() external payable {}
+    // receive() external payable {}
+
+    /*//////////////////////////////////////////////////////////////
+                            vEVM LOGIC
+    //////////////////////////////////////////////////////////////*/
     function execute(
         bytes calldata bytecode,
         bytes calldata data,
         uint256 value
     ) external view returns (vEVMState memory) {
+        // this is created new each time; no persistence, no storage
         vEVMState memory evm;
 
+        // load up the params so we can pass them around easily
         evm.code = bytecode;
         evm.data = data;
         evm.value = value;
 
-        evm.pc = 0;
-        evm.msize = 0;
+        // init the rest of the evm
+        evm.pc = 0; // init not necessary
+        evm.msize = 0; // init not necessary
         evm.running = true;
         evm.reverting = false;
 
+        // run the evm
+        // this is a giant switch/case
         do {
             bytes1 opcode = bytecode[evm.pc];
 
@@ -158,22 +184,24 @@ contract vEVM {
             } else if (opcode == 0x5B) {
                 JUMPDEST(evm);
             } else if ((opcode >= 0x60) && (opcode <= 0x7F)) {
-                // PUSHX
+                // PUSHx
                 uint256 data_size = uint8(opcode) - 0x5F;
+                // bytecode is calldata, which can be split dynamically
+                // you can't do this with other array types
                 PUSH(evm, bytecode[evm.pc + 1:evm.pc + 1 + data_size]);
+                // data is taking up space in bytecode
+                // so we need to increment the program counter
+                // PUSHx is the only opcode that does this
                 evm.pc += data_size;
             } else if ((opcode >= 0x80) && (opcode <= 0x8F)) {
-                // DUPX
-                uint256 distance = uint8(opcode) - 0x7F;
-                DUP(evm, distance);
+                // DUPx
+                DUP(evm, (uint8(opcode) - 0x7F));
             } else if ((opcode >= 0x90) && (opcode <= 0x9F)) {
-                // SWAPX
-                uint256 distance = uint8(opcode) - 0x8F;
-                SWAP(evm, distance);
+                // SWAPx
+                SWAP(evm, (uint8(opcode) - 0x8F));
             } else if ((opcode >= 0xA0) && (opcode <= 0xA4)) {
-                // LOGX
-                uint256 topics = uint8(opcode) - 0xA0;
-                LOG(evm, topics);
+                // LOGx
+                LOG(evm, (uint8(opcode) - 0xA0));
             } else if (opcode == 0xF3) {
                 RETURN(evm);
             } else if (opcode == 0xFD) {
@@ -182,7 +210,9 @@ contract vEVM {
                 SELFDESTRUCT(evm);
             }
 
-            if (evm.reverting) {}
+            if (evm.reverting) {
+                // i should implement revert eventually
+            }
 
             if (!evm.running) {
                 break;
@@ -193,6 +223,33 @@ contract vEVM {
         return evm;
     }
 
+    /*//////////////////////////////////////////////////////////////
+                            STORAGE MANAGEMENT
+    //////////////////////////////////////////////////////////////*/
+
+	// the storage hashmap is emulated through matched-index arrays in memory
+    // we look over storageKey until we find a match, then use that index to
+    // look up the corresponding value in storageData.
+
+    function expand_storage(
+        bytes32[] memory keys,
+        bytes32[] memory data,
+        uint256 slots
+    ) internal pure returns (bytes32[] memory, bytes32[] memory) {
+        bytes32[] memory newkeys = new bytes32[](keys.length + slots);
+        bytes32[] memory newdata = new bytes32[](data.length + slots);
+        for (uint256 i = 0; i < keys.length; i++) {
+            newkeys[i] = keys[i];
+            newdata[i] = data[i];
+        }
+        return (newkeys, newdata);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                            STACK MANAGEMENT
+    //////////////////////////////////////////////////////////////*/
+
+    // this should be a modifier
     function stack_overflow(vEVMState memory evm, uint256 stack_size_change)
         internal
         pure
@@ -204,10 +261,10 @@ contract vEVM {
             //evm.running = false;
             return true;
         }
-
         return false;
     }
 
+    // this should be a modifier
     function stack_underflow(vEVMState memory evm, uint256 stack_size_change)
         internal
         pure
@@ -247,59 +304,6 @@ contract vEVM {
         return newbuf;
     }
 
-    function expand_storage(
-        bytes32[] memory keys,
-        bytes32[] memory data,
-        uint256 slots
-    ) internal pure returns (bytes32[] memory, bytes32[] memory) {
-        bytes32[] memory newkeys = new bytes32[](keys.length + slots);
-        bytes32[] memory newdata = new bytes32[](data.length + slots);
-        for (uint256 i = 0; i < keys.length; i++) {
-            newkeys[i] = keys[i];
-            newdata[i] = data[i];
-        }
-        return (newkeys, newdata);
-    }
-
-    function expand_mem_slots(bytes memory buf, uint256 slots)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        bytes memory newbuf = new bytes(buf.length + (slots * 32));
-        for (uint256 i = 0; i < buf.length; i++) {
-            newbuf[i] = buf[i];
-        }
-        return newbuf;
-    }
-
-	function expand_mem_bytes(bytes memory buf, uint256 bytes_needed)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        bytes memory newbuf = new bytes(buf.length + bytes_needed);
-        for (uint256 i = 0; i < buf.length; i++) {
-            newbuf[i] = buf[i];
-        }
-        return newbuf;
-    }
-
-    function expand_logs(bytes[] memory buf, uint256 slots)
-        internal
-        pure
-        returns (bytes[] memory)
-    {
-        // console.log("expand_logs: buf.length: %s, slots: %s", buf.length, slots);
-        bytes[] memory newbuf = new bytes[](buf.length + slots);
-        // console.log("expand_logs: newbuf.length: %s, slots: %s", newbuf.length, slots);
-        for (uint256 i = 0; i < buf.length; i++) {
-            // console.log("expand_logs: i: %s", i);
-            newbuf[i] = buf[i];
-        }
-        return newbuf;
-    }
-
     function stack_read_as_uint256(bytes32 buf)
         internal
         pure
@@ -321,6 +325,34 @@ contract vEVM {
             }
         }
         return uint256(data32);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                            MEMORY MANAGEMENT
+    //////////////////////////////////////////////////////////////*/
+
+    function expand_mem_bytes(bytes memory buf, uint256 bytes_needed)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        bytes memory newbuf = new bytes(buf.length + bytes_needed);
+        for (uint256 i = 0; i < buf.length; i++) {
+            newbuf[i] = buf[i];
+        }
+        return newbuf;
+    }
+
+    function expand_mem_slots(bytes memory buf, uint256 slots)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        bytes memory newbuf = new bytes(buf.length + (slots * 32));
+        for (uint256 i = 0; i < buf.length; i++) {
+            newbuf[i] = buf[i];
+        }
+        return newbuf;
     }
 
     function memory_read_bytes(
@@ -348,6 +380,14 @@ contract vEVM {
         return value;
     }
 
+    function memory_write_bytes1(
+        bytes memory mem,
+        uint256 start,
+        bytes1 value
+    ) private pure {
+        mem[start] = value;
+    }
+
     function memory_write_bytes32(
         bytes memory mem,
         uint256 start,
@@ -358,18 +398,35 @@ contract vEVM {
         }
     }
 
-    function memory_write_bytes1(
-        bytes memory mem,
-        uint256 start,
-        bytes1 value
-    ) private pure {
-        mem[start] = value;
+    /*//////////////////////////////////////////////////////////////
+                            LOG MANAGEMENT
+    //////////////////////////////////////////////////////////////*/
+
+    function expand_logs(bytes[] memory buf, uint256 slots)
+        internal
+        pure
+        returns (bytes[] memory)
+    {
+        bytes[] memory newbuf = new bytes[](buf.length + slots);
+        for (uint256 i = 0; i < buf.length; i++) {
+            newbuf[i] = buf[i];
+        }
+        return newbuf;
     }
+
+    /*//////////////////////////////////////////////////////////////
+                            STATE MANAGEMENT
+    //////////////////////////////////////////////////////////////*/
 
     function _revert(vEVMState memory evm, bytes memory message)
         internal
         pure
     {}
+
+
+    /*//////////////////////////////////////////////////////////////
+                            OPCODES
+    //////////////////////////////////////////////////////////////*/
 
     // // operators
     // inst_size[0x00] = 1;	// STOP			0x00	Returns EVM Object as is.
@@ -848,10 +905,7 @@ contract vEVM {
         // expand data if needed
         if (data_needed > 0) {
             // how many data slots do we need to expand by?
-            evm.data = expand_mem_bytes(
-                evm.data,
-                data_needed
-            );
+            evm.data = expand_mem_bytes(evm.data, data_needed);
         }
 
         // read value
@@ -867,10 +921,10 @@ contract vEVM {
             return;
         }
 
-		// console.log("CALLDATA:");
-		// console.logBytes(evm.data);
-		// console.log("CALLDATASIZE: %s", evm.data.length);
-		
+        // console.log("CALLDATA:");
+        // console.logBytes(evm.data);
+        // console.log("CALLDATASIZE: %s", evm.data.length);
+
         evm.stack = expand_stack(evm.stack, 1);
         evm.stack[evm.stack.length - 1] = bytes32(evm.data.length);
     }
@@ -1121,7 +1175,7 @@ contract vEVM {
         evm.stack = reduce_stack(evm.stack, 2);
     }
 
-    // the storage hashmap is emulated through mached-index arrays in memory
+    // the storage hashmap is emulated through matched-index arrays in memory
     // we look over storageKey until we find a match, then use that index to
     // look up the corresponding value in storageData.
 
@@ -1529,10 +1583,4 @@ contract vEVM {
         evm.code = new bytes(0);
         evm.running = false;
     }
-
-    constructor() {}
-
-    // these were just for testing.  disable them for production
-    // fallback() external payable {}
-    // receive() external payable {}
 }
