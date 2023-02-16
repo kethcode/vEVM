@@ -1,15 +1,15 @@
-import { ConnectKitButton } from "connectkit";
-import { useAccount } from "wagmi";
+// import { ConnectKitButton } from "connectkit";
+// import { useAccount } from "wagmi";
 
-import { Account } from "./components/Account";
+// import { Account } from "./components/Account";
 import { EVMResults } from "./components/EVMResults";
 
-import React, { useState } from "react";
+import { useState } from "react";
 
 import "./App.css";
 
 export function App() {
-  const { isConnected } = useAccount();
+  //   const { isConnected } = useAccount();
   const [textCode, setTextCode] = useState("");
   const [textData, setTextData] = useState("");
   const [textValue, setTextValue] = useState("");
@@ -22,26 +22,6 @@ export function App() {
     setData(textData);
     setValue(textValue);
   };
-
-  //   const renderMain = () => {
-  //     return (
-  //       <div className="main">
-  //         <h2>bytecode</h2>
-  //         <textarea
-  //           value={text}
-  //           placeholder="0x60016002600360040160005260206000F3"
-  //           onChange={(e) => setText(e.target.value)}
-  //         />
-
-  //         <button className="button-execute" onClick={(e) => setBytecode(text)}>
-  //           Execute
-  //         </button>
-  //         <h2>output</h2>
-  //         {bytecode && <EVMResults bytecode={bytecode} />}
-  //       </div>
-  //     );
-  //     // }
-  //   };
 
   return (
     <>
@@ -104,7 +84,7 @@ export function App() {
           ></img>
         </a>
         <a
-          href="https://goerli-optimism.etherscan.io/address/0x6400e134C9440eead92B0c94FaD3EC0fefe96059#code"
+          href="https://goerli-optimism.etherscan.io/address/0xc6143BB4dE1950a8D0Dd7FBf217437F2f3b30ef7#code"
           target={"_blank"}
         >
           <img height="25" src="logo-etherscan-light.svg" alt="Etherscan"></img>

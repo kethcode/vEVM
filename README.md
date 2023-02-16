@@ -2,15 +2,19 @@
 
 ## example
 
-https://goerli-optimism.etherscan.io/address/0x6400e134C9440eead92B0c94FaD3EC0fefe96059
+https://goerli-optimism.etherscan.io/address/0xc6143BB4dE1950a8D0Dd7FBf217437F2f3b30ef7
 
 ```
-await evm.execute("0x60016002600360040160005260206000F3");
+await evm.execute("60016002600360005260AA60005560006000A07F000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F60206000527FA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5C3C3C3C3C3C3C3C3C3C3C3C3C3C3C3C360206000A160206000F3");
+```
 
 returns
 
+```
 struct vEVMState {
 	bytes code;
+	bytes data;
+	uint256 value;
 	uint256 pc;
 	bytes32[] stack;
 	bytes mem;
