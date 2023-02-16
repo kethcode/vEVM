@@ -134,10 +134,10 @@ export function EVMResults(props: any) {
             <ul>{storage_array}</ul>
           </div>
           <div className="container-terminal bottom">
-            <h3>logs</h3>
-            <ul>{logs_array}</ul>
             <h3>output</h3>
             <p>{output_array}</p>
+            <h3>logs</h3>
+            <ul>{logs_array}</ul>
           </div>
         </div>
       );
