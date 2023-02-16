@@ -119,23 +119,25 @@ export function EVMResults(props: any) {
       return (
         <div className="results">
           <h2>results</h2>
-          <div className="container-terminal">
+          <div className="container-terminal top">
             <h3>code</h3>
             <ul>{code_array}</ul>
 			<br /><p><b className="chisel-green">pc:</b> <span className="chisel-cyan">{pc_string}</span>
 			<br /><b className="chisel-green">value (wei):</b> <span className="chisel-cyan">{value_string}</span></p>
 			<h3>calldata</h3>
 			<ul>{data_array}</ul>
-            <h3>output</h3>
-            <p>{output_array}</p>
             <h3>stack</h3>
             <ul>{stack_array}</ul>
             <h3>memory</h3>
             <ul>{mem_array}</ul>
             <h3>storage</h3>
             <ul>{storage_array}</ul>
+          </div>
+          <div className="container-terminal bottom">
             <h3>logs</h3>
             <ul>{logs_array}</ul>
+            <h3>output</h3>
+            <p>{output_array}</p>
           </div>
         </div>
       );

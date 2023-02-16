@@ -194,12 +194,17 @@ h5 {
 .container-terminal {
   background: var(--terminal-bg-color);
   border: 1px solid var(--terminal-border-color);
-  border-radius: var(--border-radius) var(--border-radius) 0 0;
   padding: var(--terminal-padding);
   text-align: left;
   width: var(--terminal-width);
   max-width: var(--terminal-max-width);
   overflow-wrap: break-word;
+}
+
+.container-terminal.top{border-radius: var(--border-radius) var(--border-radius) 0 0;}
+.container-terminal.bottom{
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  margin-top: 16px;
 }
 
 .container-terminal h3 {
