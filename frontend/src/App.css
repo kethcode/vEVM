@@ -162,9 +162,18 @@ h5 {
   text-transform: uppercase;
   background: transparent;
   color: var(--main-text-color);
-  box-shadow: 0 0 0.2rem #fff, 0 0 0.2rem #fff, 0 0 2rem #ff6633,
-    0 0 0.8rem #ff6633, 0 0 2.8rem #ff6633, inset 0 0 1.3rem #ff6633;
   font-family: "Share Tech Mono", monospace;
+}
+
+.button-execute.off {
+  opacity: .3;
+  cursor: not-allowed;
+}
+
+.button-execute.on {
+  opacity: 1;
+  box-shadow: 0 0 0.2rem #fff, 0 0 0.2rem #fff, 0 0 2rem #ff6633,
+  0 0 0.8rem #ff6633, 0 0 2.8rem #ff6633, inset 0 0 1.3rem #ff6633;
 }
 
 .results {

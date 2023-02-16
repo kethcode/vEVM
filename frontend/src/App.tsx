@@ -82,7 +82,7 @@ export function App() {
           />
         </div>
 
-        <button className="button-execute" onClick={(e) => sendParamters()}>
+        <button className="button-execute on" onClick={(e) => sendParamters()}>
           Execute
         </button>
         {bytecode && (
