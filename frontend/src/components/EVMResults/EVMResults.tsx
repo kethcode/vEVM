@@ -49,7 +49,7 @@ export function EVMResults(props: any) {
 	  const code_array = code_temp.map((code_slot, index) => (
 		<li key={index}>
 		  {" "}
-		  [{getHexSlotString(index)}]: {code_slot}
+		  <span className="chisel-yellow">[{getHexSlotString(index)}]</span>: <span className="chisel-cyan">{code_slot}</span>
 		</li>
 	  ));
 
@@ -59,7 +59,7 @@ export function EVMResults(props: any) {
 	  const data_array = data_temp.map((data_slot, index) => (
 		<li key={index}>
 		  {" "}
-		  [{index}]: {data_slot}
+		  <span className="chisel-yellow">[{index}]</span>: <span className="chisel-cyan">{data_slot}</span>
 		</li>
 	  ));
 
@@ -69,14 +69,14 @@ export function EVMResults(props: any) {
 	  const output_array = output_temp.map((output_slot, index) => (
 		<li key={index}>
 		  {" "}
-		  [{index}]: {output_slot}
+		  <span className="chisel-yellow">[{index}]</span>: <span className="chisel-cyan">{output_slot}</span>
 		</li>
 	  ));
 
       const stack_array = res.stack.map((stack_slot, index) => (
         <li key={index}>
           {" "}
-          [{index}]: {stack_slot.slice(2)}
+          <span className="chisel-yellow">[{index}]</span>: <span className="chisel-cyan">{stack_slot.slice(2)}</span>
         </li>
       ));
 
@@ -84,7 +84,7 @@ export function EVMResults(props: any) {
       const mem_array = mem_temp.map((mem_slot, index) => (
         <li key={index}>
           {" "}
-          [{getHexSlotString(index)}]: {mem_slot}
+          <span className="chisel-yellow">[{getHexSlotString(index)}]</span>: <span className="chisel-cyan">{mem_slot}</span>
         </li>
       ));
 
@@ -96,7 +96,7 @@ export function EVMResults(props: any) {
       const storage_array = storage_map.map((slot, index) => (
         <li key={index}>
           {" "}
-          [{slot.key}] :{slot.data}
+          <span className="chisel-yellow">[{slot.key}]</span>: <span className="chisel-cyan">{slot.data}</span>
         </li>
       ));
 
@@ -108,7 +108,7 @@ export function EVMResults(props: any) {
       const logs_array = logs_map.map((log, index) => (
         <li key={index}>
           {" "}
-          [{index}]: {log}
+          <span className="chisel-yellow">[{index}]</span>: <span className="chisel-cyan">{log}</span>
         </li>
       ));
 
@@ -122,8 +122,8 @@ export function EVMResults(props: any) {
           <div className="container-terminal">
             <h3>code</h3>
             <ul>{code_array}</ul>
-			<br /><p><b>pc:</b> {pc_string}
-			<br /><b>value (wei):</b> {value_string}</p>
+			<br /><p><b className="chisel-green">pc:</b> <span className="chisel-cyan">{pc_string}</span>
+			<br /><b className="chisel-green">value (wei):</b> <span className="chisel-cyan">{value_string}</span></p>
 			<h3>calldata</h3>
 			<ul>{data_array}</ul>
             <h3>output</h3>

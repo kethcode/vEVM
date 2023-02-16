@@ -12,6 +12,10 @@
 
   --terminal-max-width: 90vw;
   --border-radius:10px;
+
+  --chisel-green: #59b33c;
+  --chisel-yellow: #dfce65;
+  --chisel-cyan: #6bd1c7;
 }
 
 * {
@@ -171,6 +175,13 @@ h5 {
 }
 
 .button-execute.on {
+  opacity: .7;
+  box-shadow: 0 0 0.2rem #fff, 0 0 0.2rem #fff, 0 0 2rem #ff6633,
+  0 0 0.8rem #bf4f2a, inset 0 0 1.3rem #c64f27;
+  transition: all ease .5s;
+}
+
+.button-execute.on:hover {
   opacity: 1;
   box-shadow: 0 0 0.2rem #fff, 0 0 0.2rem #fff, 0 0 2rem #ff6633,
   0 0 0.8rem #ff6633, 0 0 2.8rem #ff6633, inset 0 0 1.3rem #ff6633;
@@ -194,6 +205,7 @@ h5 {
 .container-terminal h3 {
   font-size: 13px;
   margin-bottom: 0;
+  color: var(--chisel-green);
 }
 
 .container-terminal p {
@@ -213,7 +225,12 @@ h5 {
   padding: 0;
   margin-bottom: 0;
   margin-top: 0;
+  list-style-type: none;
 }
+
+.chisel-green{color: var(--chisel-green);}
+.chisel-yellow{color: var(--chisel-yellow);}
+.chisel-cyan{color: var(--chisel-cyan);}
 
 footer{
   text-align: center;
