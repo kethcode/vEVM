@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 
 import { ethers } from "ethers";
 
-const evm_address = "0xc6143BB4dE1950a8D0Dd7FBf217437F2f3b30ef7";
+const evm_address = "0x4121E8574D28b2E5f5777F7B00d435Ee4886A5F4";
 
 import evm_abi from "../../../abi/vEVM.json";
 
@@ -21,7 +21,10 @@ type vEVMState = {
 };
 
 export function EVMResults(props: any) {
-  const provider = useProvider();
+  // const provider = useProvider();
+  // deploy to base-goerli
+  const url = "https://goerli.base.org";
+  const provider = new ethers.providers.JsonRpcProvider(url);
   const evm = useContract({
     address: evm_address,
     abi: evm_abi.abi,
@@ -76,8 +79,8 @@ export function EVMResults(props: any) {
       const stack_array = res.stack.map((stack_slot, index) => (
         <li key={index}>
           {" "}
-          <span className="chisel-yellow">[{index}]</span>:{" "}
-          <span className="chisel-cyan">{stack_slot.slice(2)}</span>
+          <span className="chisel-yellow">[{ethers.utils.hexlify(index)}]</span>
+          : <span className="chisel-cyan">{stack_slot.slice(2)}</span>
         </li>
       ));
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: mine
 pragma solidity ^0.8.17;
 
-//import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
  * @title  Virtual EVM
@@ -227,7 +227,7 @@ contract vEVM {
                             STORAGE MANAGEMENT
     //////////////////////////////////////////////////////////////*/
 
-	// the storage hashmap is emulated through matched-index arrays in memory
+    // the storage hashmap is emulated through matched-index arrays in memory
     // we look over storageKey until we find a match, then use that index to
     // look up the corresponding value in storageData.
 
@@ -304,28 +304,28 @@ contract vEVM {
         return newbuf;
     }
 
-    function stack_read_as_uint256(bytes32 buf)
-        internal
-        pure
-        returns (uint256)
-    {
-        uint256 offset = 0;
-        for (uint256 i = 32; i > 0; i--) {
-            if (bytes8(buf[i - 1]) == 0) {
-                offset += 1;
-            } else {
-                break;
-            }
-        }
+    // function stack_read_as_uint256(bytes32 buf)
+    //     internal
+    //     pure
+    //     returns (uint256)
+    // {
+    //     uint256 offset = 0;
+    //     for (uint256 i = 32; i > 0; i--) {
+    //         if (bytes8(buf[i - 1]) == 0) {
+    //             offset += 1;
+    //         } else {
+    //             break;
+    //         }
+    //     }
 
-        bytes32 data32 = bytes32(0);
-        for (uint256 i = 0; i < 32; i++) {
-            if (i >= offset) {
-                data32 |= bytes32(buf[i - offset]) >> (i * 8);
-            }
-        }
-        return uint256(data32);
-    }
+    //     bytes32 data32 = bytes32(0);
+    //     for (uint256 i = 0; i < 32; i++) {
+    //         if (i >= offset) {
+    //             data32 |= bytes32(buf[i - offset]) >> (i * 8);
+    //         }
+    //     }
+    //     return uint256(data32);
+    // }
 
     /*//////////////////////////////////////////////////////////////
                             MEMORY MANAGEMENT
@@ -423,7 +423,6 @@ contract vEVM {
         pure
     {}
 
-
     /*//////////////////////////////////////////////////////////////
                             OPCODES
     //////////////////////////////////////////////////////////////*/
@@ -440,8 +439,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) +
-                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
+            uint256(evm.stack[evm.stack.length - 1]) +
+                uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = reduce_stack(evm.stack, 1);
     }
@@ -452,8 +451,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) *
-                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
+            uint256(evm.stack[evm.stack.length - 1]) *
+                uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = reduce_stack(evm.stack, 1);
     }
@@ -464,8 +463,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) -
-                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
+            uint256(evm.stack[evm.stack.length - 1]) -
+                uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = reduce_stack(evm.stack, 1);
     }
@@ -476,8 +475,8 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 2] = bytes32(
-            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) /
-                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
+            uint256(evm.stack[evm.stack.length - 1]) /
+                uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = reduce_stack(evm.stack, 1);
     }
@@ -504,8 +503,8 @@ contract vEVM {
         }
 
         evm.stack[evm.stack.length - 2] = bytes32(
-            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) %
-                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
+            uint256(evm.stack[evm.stack.length - 1]) %
+                uint256(evm.stack[evm.stack.length - 2])
         );
 
         evm.stack = reduce_stack(evm.stack, 1);
@@ -531,14 +530,20 @@ contract vEVM {
         if (stack_underflow(evm, 3)) {
             return;
         }
+
         if (uint256(evm.stack[evm.stack.length - 3]) == 0) {
             evm.stack[evm.stack.length - 3] = bytes32(0);
         } else {
-            evm.stack[evm.stack.length - 3] = bytes32(
-                (stack_read_as_uint256(evm.stack[evm.stack.length - 1]) +
-                    stack_read_as_uint256(evm.stack[evm.stack.length - 2])) %
-                    stack_read_as_uint256(evm.stack[evm.stack.length - 3])
-            );
+            uint256 x = uint256(evm.stack[evm.stack.length - 1]);
+            uint256 y = uint256(evm.stack[evm.stack.length - 2]);
+            uint256 m = uint256(evm.stack[evm.stack.length - 3]);
+
+            uint256 result;
+
+            assembly {
+                result := addmod(x, y, m)
+            }
+            evm.stack[evm.stack.length - 3] = bytes32(result);
         }
         evm.stack = reduce_stack(evm.stack, 2);
     }
@@ -548,14 +553,21 @@ contract vEVM {
         if (stack_underflow(evm, 3)) {
             return;
         }
+
         if (uint256(evm.stack[evm.stack.length - 3]) == 0) {
             evm.stack[evm.stack.length - 3] = bytes32(0);
         } else {
-            evm.stack[evm.stack.length - 3] = bytes32(
-                (stack_read_as_uint256(evm.stack[evm.stack.length - 1]) *
-                    stack_read_as_uint256(evm.stack[evm.stack.length - 2])) %
-                    stack_read_as_uint256(evm.stack[evm.stack.length - 3])
-            );
+            uint256 x = uint256(evm.stack[evm.stack.length - 1]);
+            uint256 y = uint256(evm.stack[evm.stack.length - 2]);
+            uint256 m = uint256(evm.stack[evm.stack.length - 3]);
+
+            uint256 result;
+
+            assembly {
+                result := mulmod(x, y, m)
+            }
+
+            evm.stack[evm.stack.length - 3] = bytes32(result);
         }
         evm.stack = reduce_stack(evm.stack, 2);
     }
@@ -565,9 +577,10 @@ contract vEVM {
         if (stack_underflow(evm, 2)) {
             return;
         }
+
         evm.stack[evm.stack.length - 2] = bytes32(
-            stack_read_as_uint256(evm.stack[evm.stack.length - 1]) **
-                stack_read_as_uint256(evm.stack[evm.stack.length - 2])
+            uint256(evm.stack[evm.stack.length - 1]) **
+                uint256(evm.stack[evm.stack.length - 2])
         );
         evm.stack = reduce_stack(evm.stack, 1);
     }
@@ -578,7 +591,7 @@ contract vEVM {
             return;
         }
         uint256 byte_num = uint256(evm.stack[evm.stack.length - 1]);
-        uint256 value = stack_read_as_uint256(evm.stack[evm.stack.length - 2]);
+        uint256 value = uint256(evm.stack[evm.stack.length - 2]);
 
         uint256 result;
         assembly {
@@ -596,8 +609,8 @@ contract vEVM {
         }
         evm.stack[evm.stack.length - 2] = bytes32(
             uint256(
-                stack_read_as_uint256(evm.stack[evm.stack.length - 1]) <
-                    stack_read_as_uint256(evm.stack[evm.stack.length - 2])
+                uint256(evm.stack[evm.stack.length - 1]) <
+                    uint256(evm.stack[evm.stack.length - 2])
                     ? 1
                     : 0
             )
@@ -612,8 +625,8 @@ contract vEVM {
         }
         evm.stack[evm.stack.length - 2] = bytes32(
             uint256(
-                stack_read_as_uint256(evm.stack[evm.stack.length - 1]) >
-                    stack_read_as_uint256(evm.stack[evm.stack.length - 2])
+                uint256(evm.stack[evm.stack.length - 1]) >
+                    uint256(evm.stack[evm.stack.length - 2])
                     ? 1
                     : 0
             )
@@ -660,8 +673,8 @@ contract vEVM {
         }
         evm.stack[evm.stack.length - 2] = bytes32(
             uint256(
-                stack_read_as_uint256(evm.stack[evm.stack.length - 1]) ==
-                    stack_read_as_uint256(evm.stack[evm.stack.length - 2])
+                uint256(evm.stack[evm.stack.length - 1]) ==
+                    uint256(evm.stack[evm.stack.length - 2])
                     ? 1
                     : 0
             )
@@ -675,11 +688,7 @@ contract vEVM {
             return;
         }
         evm.stack[evm.stack.length - 1] = bytes32(
-            uint256(
-                stack_read_as_uint256(evm.stack[evm.stack.length - 1]) == 0
-                    ? 1
-                    : 0
-            )
+            uint256(uint256(evm.stack[evm.stack.length - 1]) == 0 ? 1 : 0)
         );
     }
 
@@ -725,14 +734,20 @@ contract vEVM {
     }
 
     // inst_size[0x1A] = 1;	// BYTE			0x1A	Requires 2 stack values, 0 imm values.
-    function BYTE(vEVMState memory evm) internal pure {
+    function BYTE(vEVMState memory evm) internal view {
         if (stack_underflow(evm, 2)) {
             return;
         }
-        uint256 index = uint256(evm.stack[evm.stack.length - 1]);
-        evm.stack[evm.stack.length - 2] = bytes1(
-            bytes32(evm.stack[evm.stack.length - 2] << (index * 8))
-        );
+        uint256 i = uint256(evm.stack[evm.stack.length - 1]);
+        uint256 x = uint256(evm.stack[evm.stack.length - 2]);
+
+        uint256 result;
+
+        assembly {
+            result := byte(i, x)
+        }
+        evm.stack[evm.stack.length - 2] = bytes32(result);
+
         evm.stack = reduce_stack(evm.stack, 1);
     }
 
@@ -772,9 +787,9 @@ contract vEVM {
             return;
         }
 
-        uint256 shift = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
+        uint256 shift = uint256(evm.stack[evm.stack.length - 1]);
         int256 value = int256(
-            stack_read_as_uint256(evm.stack[evm.stack.length - 2])
+            uint256(evm.stack[evm.stack.length - 2])
         );
 
         bytes32 result;
@@ -891,7 +906,7 @@ contract vEVM {
         // for now, i'm going to append zeroes
 
         // get the calldata position to read from
-        uint256 start_position = stack_read_as_uint256(
+        uint256 start_position = uint256(
             evm.stack[evm.stack.length - 1]
         );
 
@@ -1065,7 +1080,7 @@ contract vEVM {
             return;
         }
         // get the memory address to read from
-        uint256 start_position = stack_read_as_uint256(
+        uint256 start_position = uint256(
             evm.stack[evm.stack.length - 1]
         );
 
@@ -1102,7 +1117,7 @@ contract vEVM {
         }
 
         // get the memory address to write to
-        uint256 start_position = stack_read_as_uint256(
+        uint256 start_position = uint256(
             evm.stack[evm.stack.length - 1]
         );
 
@@ -1128,7 +1143,7 @@ contract vEVM {
         memory_write_bytes32(
             evm.mem,
             start_position,
-            bytes32(stack_read_as_uint256(evm.stack[evm.stack.length - 2]))
+            bytes32(uint256(evm.stack[evm.stack.length - 2]))
         );
 
         // pop stack
@@ -1333,14 +1348,35 @@ contract vEVM {
     // // stack manipluation
 
     // Generalized PUSH instruction
+    // function PUSH(vEVMState memory evm, bytes memory data) internal pure {
+    //     if (stack_overflow(evm, 1)) {
+    //         return;
+    //     }
+
+    //     // apparently I had this right to begin with.  This will be fun to sort out
+    //     bytes32 data32 = bytes32(0);
+    //     for (uint256 i = 0; i < data.length; i++) {
+    //         data32 |= bytes32(data[i]) >> (i * 8);
+    //     }
+
+    //     evm.stack = expand_stack(evm.stack, 1);
+    //     evm.stack[evm.stack.length - 1] = bytes32(data32);
+    // }
+
     function PUSH(vEVMState memory evm, bytes memory data) internal pure {
         if (stack_overflow(evm, 1)) {
             return;
         }
 
         bytes32 data32 = bytes32(0);
-        for (uint256 i = 0; i < data.length; i++) {
-            data32 |= bytes32(data[i]) >> (i * 8);
+        uint256 offset = 32 - data.length;
+
+        for (uint256 i = 0; i < 32; i++) {
+            if (i < offset) {
+                // do nothing
+            } else {
+                data32 |= bytes32(data[i - offset]) >> (i * 8);
+            }
         }
 
         evm.stack = expand_stack(evm.stack, 1);
@@ -1475,8 +1511,8 @@ contract vEVM {
         }
 
         // data start and size
-        uint256 start = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
-        uint256 size = stack_read_as_uint256(evm.stack[evm.stack.length - 2]);
+        uint256 start = uint256(evm.stack[evm.stack.length - 1]);
+        uint256 size = uint256(evm.stack[evm.stack.length - 2]);
 
         // console.log("LOG start:", start);
         // console.log("LOG size:", size);
@@ -1547,8 +1583,8 @@ contract vEVM {
             return;
         }
 
-        uint256 start = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
-        uint256 size = stack_read_as_uint256(evm.stack[evm.stack.length - 2]);
+        uint256 start = uint256(evm.stack[evm.stack.length - 1]);
+        uint256 size = uint256(evm.stack[evm.stack.length - 2]);
 
         evm.output = memory_read_bytes(evm.mem, start, size);
         evm.stack = reduce_stack(evm.stack, 2);
@@ -1563,8 +1599,8 @@ contract vEVM {
             return;
         }
 
-        uint256 start = stack_read_as_uint256(evm.stack[evm.stack.length - 1]);
-        uint256 size = stack_read_as_uint256(evm.stack[evm.stack.length - 2]);
+        uint256 start = uint256(evm.stack[evm.stack.length - 1]);
+        uint256 size = uint256(evm.stack[evm.stack.length - 2]);
 
         evm.output = memory_read_bytes(evm.mem, start, size);
         evm.stack = reduce_stack(evm.stack, 2);
