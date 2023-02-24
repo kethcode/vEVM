@@ -84,7 +84,7 @@ export function App() {
           ></img>
         </a>
         <a
-          href="https://goerli-optimism.etherscan.io/address/0xc6143BB4dE1950a8D0Dd7FBf217437F2f3b30ef7#code"
+          href="https://goerli.basescan.org/address/0x4121E8574D28b2E5f5777F7B00d435Ee4886A5F4#code"
           target={"_blank"}
         >
           <img height="25" src="logo-etherscan-light.svg" alt="Etherscan"></img>
