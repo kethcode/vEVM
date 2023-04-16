@@ -120,7 +120,7 @@ export function EVMResults(props: any) {
         </li>
       ));
 
-      const answer = "0x0000000000000000000000000000000000000000000000010cbdea52";
+      const answer = "0x0000000000000000000000000000000000000000000000010d00edb9";
       
       if(res.output == answer){
         return(

@@ -43,11 +43,11 @@ export function App() {
           </div>
           <div className="hint-detail">
             <p>
-              0xcd676126e5e1c8fbf675646cf165bf2476a19efbdaced9e204ad3dc40d01ad0f
-              {/* answer: 1677231384, 0x63F88518 in hex*/}
+              0xfc10b009f8395435080c202eb58edae7d8919500d2a97ed214c3c8395e635aa1
+              {/* answer: 1681623167, 0x643B887F in hex*/}
               {/* detail: the has is a transaction id.  on etherscan, there is a timestamp. converting that timestamp to a unix timestamp gives the answer. */}
               <br />
-              0x4121e8574d28b2e5f5777f7b00d435ee4886a5f4
+              0xeeDE8663A8cF15F371F764F5de95736B7baAB757
               {/* answer: 9001, 0x2329 in hex */}
               {/* detail: the address is a contract.  on etherscan, there is a balance.  converting that balance to a decimal gives the answer. */}
               <br />
@@ -58,9 +58,9 @@ export function App() {
           </div>
         </div>
 
-        {/* one possible bytecode: 6363F8851861232963a8c542110101600052601C6004F3 */}
-        {/* answer: 0x0000000000000000000000000000000000000000000000010cbdea52 */}
-        {/* detail: push all 3 values to teh stack, and then add twice to get the sum. the answer is now on the stack, but the return opcode requires it to be in memory, so copy it to memory, and return it.  */}
+        {/* one possible bytecode: 63643B887F61232963a8c542110101600052601C6004F3 */}
+        {/* answer: 0x0000000000000000000000000000000000000000000000010d00edb9 */}
+        {/* detail: push all 3 values to the stack, and then add twice to get the sum. the answer is now on the stack, but the return opcode requires it to be in memory, so copy it to memory, and return it.  */}
         
         <textarea
           className="textarea-terminal"
@@ -105,16 +105,15 @@ export function App() {
       <footer>
         <a href="https://www.evm.codes" target={"_blank"}>https://www.evm.codes</a>
         <a
-          href="https://ethereum.github.io/execution-specs/autoapi/ethereum/paris/vm"
+          href="https://ethereum.github.io/execution-specs/autoapi/ethereum/shanghai/vm"
           target={"_blank"}
         >
-          https://ethereum.github.io/execution-specs/autoapi/ethereum/paris/vm
+          https://ethereum.github.io/execution-specs/autoapi/ethereum/shanghai/vm
         </a>
         <a
-          href="https://goerli.basescan.org"
-          target={"_blank"}
+          href="https://etherscan.io" target={"_blank"}
         >
-          https://goerli.basescan.org
+          https://etherscan.io
         </a>
         <a href="https://github.com/kethcode/vEVM" target={"_blank"}>
           https://github.com/kethcode/vEVM
@@ -124,6 +123,9 @@ export function App() {
         </a>
         <a href="https://emn178.github.io/online-tools/keccak_256.html" target={"_blank"}>
           https://emn178.github.io/online-tools/keccak_256.html
+        </a>
+        <a href="https://www.browserling.com/tools/utc-to-unix" target={"_blank"}>
+        https://www.browserling.com/tools/utc-to-unix
         </a>
       </footer>
     </>
