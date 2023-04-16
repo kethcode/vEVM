@@ -27,7 +27,7 @@ export function App() {
     <>
       <header>
         <div className="header">
-            <h1>Not Your Keys</h1>
+          <h1>Not Your Keys</h1>
         </div>
       </header>
       <div className="main">
@@ -61,7 +61,7 @@ export function App() {
         {/* one possible bytecode: 63643B887F61232963a8c542110101600052601C6004F3 */}
         {/* answer: 0x0000000000000000000000000000000000000000000000010d00edb9 */}
         {/* detail: push all 3 values to the stack, and then add twice to get the sum. the answer is now on the stack, but the return opcode requires it to be in memory, so copy it to memory, and return it.  */}
-        
+
         <textarea
           className="textarea-terminal"
           value={textCode}
@@ -101,18 +101,20 @@ export function App() {
       {/* //TODO: add https://www.4byte.directory/<br/>DONE */}
       {/* //TODO: add https://emn178.github.io/online-tools/keccak_256.html<br/>DONE */}
 
-
       <footer>
-        <a href="https://www.evm.codes" target={"_blank"}>https://www.evm.codes</a>
+        <a href="https://vevm-demo.vercel.app" target={"_blank"}>
+          https://vevm-demo.vercel.app
+        </a>
+        <a href="https://www.evm.codes" target={"_blank"}>
+          https://www.evm.codes
+        </a>
         <a
           href="https://ethereum.github.io/execution-specs/autoapi/ethereum/shanghai/vm"
           target={"_blank"}
         >
           https://ethereum.github.io/execution-specs/autoapi/ethereum/shanghai/vm
         </a>
-        <a
-          href="https://etherscan.io" target={"_blank"}
-        >
+        <a href="https://etherscan.io" target={"_blank"}>
           https://etherscan.io
         </a>
         <a href="https://github.com/kethcode/vEVM" target={"_blank"}>
@@ -121,11 +123,17 @@ export function App() {
         <a href="https://www.4byte.directory" target={"_blank"}>
           https://www.4byte.directory
         </a>
-        <a href="https://emn178.github.io/online-tools/keccak_256.html" target={"_blank"}>
+        <a
+          href="https://emn178.github.io/online-tools/keccak_256.html"
+          target={"_blank"}
+        >
           https://emn178.github.io/online-tools/keccak_256.html
         </a>
-        <a href="https://www.browserling.com/tools/utc-to-unix" target={"_blank"}>
-        https://www.browserling.com/tools/utc-to-unix
+        <a
+          href="https://www.browserling.com/tools/utc-to-unix"
+          target={"_blank"}
+        >
+          https://www.browserling.com/tools/utc-to-unix
         </a>
       </footer>
     </>
