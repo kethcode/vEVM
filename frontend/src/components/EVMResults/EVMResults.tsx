@@ -124,12 +124,24 @@ export function EVMResults(props: any) {
       
       if(res.output == answer){
         return(
-          <div>YEAH</div>
+          <div className="box">
+              SUCCESS.
+              <br></br><br></br>
+              YOU DID IT.
+          </div>
         )
       }
       else{
         return(
-          <div>FFFFF</div>
+          <div className="box">
+            <p>
+              Not Your Keys,
+              <br></br>
+              Not Your Money.
+              <br></br><br></br>
+              Please try again, honey.
+            </p>
+          </div>
         )
       }
 

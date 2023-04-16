@@ -27,17 +27,11 @@ export function App() {
     <>
       <header>
         <div className="header">
-          <div className="header-left">
-            {/* <img src="vEVM.png" alt="logo" className="header-left-img" /> */}
-          </div>
-          <div className="header-center">
             <h1>Not Your Keys</h1>
-            {/* <h5>demo</h5> */}
-          </div>
-          <div className="header-right">{/* <ConnectKitButton /> */}</div>
         </div>
       </header>
       <div className="main">
+        <div className="box">
           <div className="hint">
             <p>
               // time is critical
@@ -62,17 +56,16 @@ export function App() {
               {/* detail: when you call a function on a contract, it selects the function using the function signature, which is the first 4 bytes a keccak256 hash. */}
             </p>
           </div>
-        
-        <div>
-        bytecode: sum the answers, copy to memory, and return
+        </div>
+
         {/* one possible bytecode: 6363F8851861232963a8c542110101600052601C6004F3 */}
         {/* answer: 0x0000000000000000000000000000000000000000000000010cbdea52 */}
         {/* detail: push all 3 values to teh stack, and then add twice to get the sum. the answer is now on the stack, but the return opcode requires it to be in memory, so copy it to memory, and return it.  */}
-        </div>
+        
         <textarea
           className="textarea-terminal"
           value={textCode}
-          placeholder="0x60016002600360040160005260206000F3"
+          placeholder="bytecode: sum the answers, copy to memory, and return"
           onChange={(e) => setTextCode(e.target.value)}
         />
         {/* <div className="tx-params">
