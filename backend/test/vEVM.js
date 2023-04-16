@@ -386,6 +386,27 @@ describe("vEVM", function () {
       });
     });
 
+    describe("ADDRESS", function () {
+      it("Should place address of vEVM on stack", async function () {
+        const { evm } = await loadFixture(deployFixture);
+        let result = await evm.execute("0x30", "0x00", 0);
+        // print_evm_state(result);
+        expect(result.stack[0]).to.deep.equal(
+          "0x0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa3"
+        );
+      });
+    });
+
+    describe("BALANCE", function () {
+      it("Should place address of vEVM on stack", async function () {
+        const { evm } = await loadFixture(deployFixture);
+        let result = await evm.execute("0x3031", "0x00", 0);
+        // print_evm_state(result);
+        expect(result.stack[0]).to.deep.equal(
+          "0x0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa3"
+        );
+      });
+    });
 
     // describe("SHA3", function () {
     //   it("Should extract a specfic byte from a stack value back onto the stack", async function () {
@@ -536,21 +557,6 @@ describe("vEVM", function () {
     //   });
     // });
 
-
-    // describe("SHA3", function () {
-    //   it("Should extract a specfic byte from a stack value back onto the stack", async function () {
-    //     const { evm } = await loadFixture(deployFixture);
-    //     let result = await evm.execute(
-    //       "0x7FFFFFFFFF000000000000000000000000000000000000000000000000000000006000526004600020"
-    //     );
-    //     console.log(
-    //       "  code:",
-    //       "0x7FFFFFFFFF000000000000000000000000000000000000000000000000000000006000526004600020"
-    //     );
-    //     print_evm_state(result);
-    //   });
-    // });
-
     // describe("DUPN", function () {
     //   it("Should Duplicate the Nth stack item (from top of the stack) to the top of stack", async function () {
     //     const { evm } = await loadFixture(deployFixture);
@@ -603,14 +609,6 @@ describe("vEVM", function () {
     //   });
     // });
 
-    // describe("ADDRESS", function () {
-    //   it("Should ", async function () {
-    //     const { evm } = await loadFixture(deployFixture);
-    //     let result = await evm.execute("0x30");
-    //     print_evm_state(result);
-    //   });
-    // });
-
     // describe("BALANCE", function () {
     //   it("Should ", async function () {
     //     const { evm } = await loadFixture(deployFixture);
@@ -632,23 +630,6 @@ describe("vEVM", function () {
     //   it("Should ", async function () {
     //     const { evm } = await loadFixture(deployFixture);
     //     let result = await evm.execute("0x600160026003600052FF");
-    //     print_evm_state(result);
-    //   });
-    // });
-
-    // describe("SIGNEXTEND", function () {
-    //   it("Should ", async function () {
-    //     const { evm } = await loadFixture(deployFixture);
-    //     let result = await evm.execute("0x60FF60000B607F60000B");
-    //     print_evm_state(result);
-    //   });
-    // });
-
-    // describe("SAR", function () {
-    //   it("Should ", async function () {
-    //     const { evm } = await loadFixture(deployFixture);
-    // 	// 0x600260011D7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF060041D
-    //     let result = await evm.execute("0x600260011D7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF060041D");
     //     print_evm_state(result);
     //   });
     // });
