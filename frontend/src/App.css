@@ -104,8 +104,14 @@ h5 {
   align-items: center;
   justify-content: start;
   flex-direction: column;
-  text-align: center;
+  text-align: left;
   margin-top: 16px;
+}
+
+.main .hint, .main .hint-detail, .main div{
+  width: var(--terminal-width);
+  max-width: var(--terminal-max-width);
+  word-break: break-all;
 }
 
 .textarea-terminal {
@@ -243,9 +249,12 @@ footer{
 }
 
 footer a {
-  display: inline-block;
+  color: var(--main-text-color);
+  text-decoration: none;
+  display: block;
+  text-align: left;
   padding: 8px 16px;
-  opacity: .3;
+  opacity: .5;
   transition: all ease .2s;
 }
 
