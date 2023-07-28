@@ -23,7 +23,7 @@ type vEVMState = {
 export function EVMResults(props: any) {
   // const provider = useProvider();
   // deploy to base-goerli
-  const url = "https://goerli.base.org";
+  const url = "https://developer-access-mainnet.base.org";
   const provider = new ethers.providers.JsonRpcProvider(url);
   const evm = useContract({
     address: evm_address,

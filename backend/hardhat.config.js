@@ -20,20 +20,27 @@ module.exports = {
     ],
   },
   networks: {
-    "optimism-goerli": {
-      url: process.env.ALCHEMY_OP_GOERLI_KEY_WSS,
-      accounts: [process.env.ALCHEMY_OP_GOERLI_PRIVATE_KEY],
-    },
+    // "optimism-goerli": {
+    //   url: process.env.ALCHEMY_OP_GOERLI_KEY_WSS,
+    //   accounts: [process.env.ALCHEMY_OP_GOERLI_PRIVATE_KEY],
+    // },
     // for testnet
-    "base-goerli": {
-      url: "https://goerli.base.org",
-      accounts: [process.env.ALCHEMY_OP_GOERLI_PRIVATE_KEY],
-    },
+    // "base-goerli": {
+    //   url: "https://goerli.base.org",
+    //   accounts: [process.env.ALCHEMY_OP_GOERLI_PRIVATE_KEY],
+    // },
+      // for mainnet
+      "base": {
+        url: "https://developer-access-mainnet.base.org",
+        accounts: [process.env.ALCHEMY_BASE_PRIVATE_KEY],
+        gasPrice: 500000000
+      },
   },
   etherscan: {
     apiKey: {
       // optimisticGoerli: process.env.ETHERSCAN_OP_API_KEY,
-      "base-goerli": process.env.BASE_BLOCKSCOUT_KEY
+      "base-goerli": process.env.BASE_GOERLI_BLOCKSCOUT_KEY,
+      "base": process.env.BASE_BASESCAN_KEY
     },
     customChains: [
       {
@@ -49,6 +56,15 @@ module.exports = {
           // Basescan by Etherscan
           apiURL: "https://api-goerli.basescan.org/api",
           browserURL: "https://goerli.basescan.org"
+        },
+      },
+      {
+        network: "base",
+        chainId: 8453,
+        urls: {
+          // Basescan by Etherscan
+          apiURL: "https://api.basescan.org/api",
+          browserURL: "https://basescan.org"
         },
       },
     ],
